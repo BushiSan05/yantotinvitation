@@ -336,22 +336,38 @@ async function submitRSVP(event) {
     const guestMessage = messageInput ? messageInput.value.trim() : '';
 
     if (!guestName) {
-        alert("Please type your name before responding!");
+        showAlertDialog(
+            "Missing Name",
+            "Please type your name before responding.",
+            "warning"
+        );
         return;
     }
 
     if (!guestMessage) {
-        alert("Please add a message before responding!");
+        showAlertDialog(
+            "Missing Message",
+            "Please add a message before responding.",
+            "warning"
+        );
         return;
     }
 
     if (guestName.length < 2) {
-        alert("Please enter at least 2 characters for your name.");
+        showAlertDialog(
+            "Invalid Name",
+            "Please enter at least 2 characters for your name.",
+            "warning"
+        );
         return;
     }
 
     if (guestName.length > 50) {
-        alert("Please enter a name shorter than 50 characters.");
+        showAlertDialog(
+            "Invalid Name",
+            "Please enter a name shorter than 50 characters.",
+            "warning"
+        );
         return;
     }
 
@@ -381,10 +397,18 @@ async function submitRSVP(event) {
 
         loadRSVPList();
 
-        alert(`Let's go racing, ${sanitizedName}! 🏁🏍️`);
+        showAlertDialog(
+            "Success",
+            `Let's go racing, ${sanitizedName}!`,
+            "success"
+        );
     } catch (err) {
         showDiagnosticError();
-        alert("Database Submission Failed! Check the diagnostic log at the bottom.");
+        showAlertDialog(
+            "Submission Failed",
+            "Unable to send message at the moment. Please try again later.",
+            "error"
+        );
 
         goingBtn.disabled = false;
         nameInput.disabled = false;
@@ -523,7 +547,7 @@ async function loadRSVPList() {
 
         if (data.length === 0) {
             listBox.innerHTML =
-                '<div class="guest-list-empty">No Messages yet.</div>';
+                '<div class="guest-list-empty">No RSVPs yet.</div>';
 
             // Update counters
             if (countSpan) countSpan.textContent = '(0)';
@@ -589,3 +613,67 @@ function bindModalControls() {
         }
     });
 }
+
+function showAlertDialog(title, message, type = "warning") {
+
+    const modal = document.getElementById("alertModal");
+    const icon = document.getElementById("alertIcon");
+    const titleEl = document.getElementById("alertTitle");
+    const msgEl = document.getElementById("alertMessage");
+    const btn = document.getElementById("alertOkBtn");
+
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+
+    switch (type) {
+
+        case "success":
+            icon.textContent = "✅";
+            btn.style.background = "#2ecc71";
+            break;
+
+        case "error":
+            icon.textContent = "❌";
+            btn.style.background = "#e74c3c";
+            break;
+
+        case "info":
+            icon.textContent = "ℹ️";
+            btn.style.background = "#3498db";
+            break;
+
+        default:
+            icon.textContent = "⚠️";
+            btn.style.background = "#f39c12";
+            break;
+    }
+
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+
+    btn.focus();
+}
+
+function closeAlertDialog() {
+
+    const modal = document.getElementById("alertModal");
+
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+}
+
+document.getElementById("alertOkBtn")
+    .addEventListener("click", closeAlertDialog);
+
+document.getElementById("alertModal")
+    .addEventListener("click", function (e) {
+        if (e.target === this) {
+            closeAlertDialog();
+        }
+    });
+
+document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+        closeAlertDialog();
+    }
+});
