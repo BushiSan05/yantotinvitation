@@ -547,7 +547,7 @@ async function loadRSVPList() {
 
         if (data.length === 0) {
             listBox.innerHTML =
-                '<div class="guest-list-empty">No RSVPs yet.</div>';
+                '<div class="guest-list-empty">No messages yet.</div>';
 
             // Update counters
             if (countSpan) countSpan.textContent = '(0)';
@@ -562,7 +562,7 @@ async function loadRSVPList() {
         console.error('[GuestList] error:', err);
 
         listBox.innerHTML =
-            '<div class="guest-list-empty">No RSVPs yet.</div>';
+            '<div class="guest-list-empty">No messages yet.</div>';
 
         if (countSpan) countSpan.textContent = '(0)';
         if (countSpanModal) countSpanModal.textContent = '(0)';
