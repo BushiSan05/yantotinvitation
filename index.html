@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You're Invited! 🎂</title>
+    <!-- Include Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- LINK TO EXTERNAL CSS FILE -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- On-Screen Visual Debugger for Mobile Troubleshooting -->
+    <div id="error-logger"></div>
+
+    <!-- Ambient Graphics Layer Background -->
+    <div id="ambient-wrapper"></div>
+
+    <!-- Active Invitation 3D Component Block -->
+    <div class="card-container" onclick="toggleCard(event)" tabindex="0" role="button"
+        aria-label="Birthday invitation card, press Enter or Space to flip">
+        <div class="card-inner">
+
+            <!-- Cover Front Layout (With Auto-Slideshow) -->
+            <div class="card-front">
+                <h1>🏁 YOU'RE INVITED! 🏁</h1>
+                <h2>🏍️ Eliann Ichiro 🏍️</h2>
+                <p class="text-big">is turning 1!</p>
+                <p class="text-medium">Join the Birthday Grand Prix!</p>
+
+                <div class="slideshow-container" id="slideshowBox">
+                    <div class="placeholder-text">Loading memories...</div>
+                </div>
+
+                <p class="text-small">( Click card to open details )</p>
+            </div>
+
+            <!-- Details Back Layout -->
+            <div class="card-back">
+                <h2>🏁 Birthday Grand Prix! 🏍️</h2>
+                <div class="video-container" id="videoBox">
+                    <div class="video-placeholder-text">Loading video...</div>
+                </div>
+                <div class="details">
+                    <div class="detail-item">📅 <strong>Date:</strong> Monday, August 17th</div>
+                    <div class="detail-item">⏰ <strong>Time:</strong> 6:00 PM onwards</div>
+                    <div class="detail-item">📍 <strong>Venue:</strong> Calvario Loay, Bohol</div>
+                </div>
+
+                <div class="rsvp-form">
+                    <input type="text" id="guestName" class="name-input" placeholder="Enter your name" required
+                        aria-label="Guest name input" aria-required="true">
+                    <textarea id="guestMessage" class="message-input" placeholder="Add a message" rows="2"
+                        aria-label="Guest message input"></textarea>
+                    <div class="btn-group">
+                        <button id="goingBtn" class="rsvp-btn btn-going" onclick="submitRSVP(event)"
+                            aria-label="RSVP">START ENGINE! 🏁</button>
+                    </div>
+                </div>
+
+                <div class="guest-list-centered">
+                    <button id="viewMessagesBtn" class="view-messages-btn" type="button"
+                        aria-label="View all guest messages">
+                        🏁 View All Guest Messages <span id="guestCount" class="guest-count">(0)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal / Dialog for all Guest Names + Messages -->
+    <div id="messagesModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="messagesModalTitle"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <button id="closeModalBtn" class="modal-close" type="button"
+                aria-label="Close guest messages dialog">&times;</button>
+            <h3 id="messagesModalTitle" class="modal-title">🏁 Guest Messages <span id="guestCountModal"
+                    class="guest-count">(0)</span></h3>
+            <div id="guestListBoxModal" class="guest-list-box guest-list-box-modal" role="list" aria-live="polite">
+                <div class="guest-list-placeholder">Loading guest list…</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LINK TO EXTERNAL JAVASCRIPT FILE (Placed at bottom for fast loading) -->
+    <script src="script.js"></script>
+</body>
+
+</html>
