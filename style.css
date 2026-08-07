@@ -296,19 +296,38 @@ h6 {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
+#slideshowBox {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    overflow: hidden;
+}
+
 .slide {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+
     opacity: 0;
-    transition: opacity 0.8s ease-in-out;
+    transition: opacity 1.2s ease;
+    transform: scale(1);
 }
 
 .slide.active {
     opacity: 1;
+    animation: kenBurns 5s ease forwards;
+}
+
+@keyframes kenBurns {
+    0% {
+        transform: scale(1) translate(0, 0);
+    }
+
+    100% {
+        transform: scale(1.12) translate(-2%, -2%);
+    }
 }
 
 /* Back Card Info styling */

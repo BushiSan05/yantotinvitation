@@ -126,6 +126,7 @@ function popBalloon(balloon) {
 window.addEventListener('load', () => {
     // Initialize basic functionality regardless of Supabase
     generateAmbientEffects();
+    audio.load();
 
     // Try to initialize Supabase-dependent features
     if (typeof window.supabase === 'undefined') {
@@ -677,3 +678,20 @@ document.addEventListener("keydown", function (e) {
         closeAlertDialog();
     }
 });
+
+const audio = document.getElementById("bgMusic");
+audio.load();
+
+function startMusic() {
+    audio.play().catch(err => console.log(err));
+
+    // Remove the listeners so this only runs once
+    document.removeEventListener("click", startMusic);
+    document.removeEventListener("touchstart", startMusic);
+}
+
+// Desktop
+document.addEventListener("click", startMusic);
+
+// Mobile (including Messenger)
+document.addEventListener("touchstart", startMusic);
