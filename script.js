@@ -2,6 +2,9 @@
 const SUPABASE_URL = 'https://mpbzwdvwcaefxtzotywo.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wYnp3ZHZ3Y2FlZnh0em90eXdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjkzNTIsImV4cCI6MjA5OTIwNTM1Mn0.dvbsfw79hl9aV9SJRo3D-q5SAnrnSC9-m6rNw7OqTV0';
 
+const bgRides = document.getElementById("bgRides");
+let invitationVideo = null;
+
 // 2. MIXED CELEBRATION EFFECTS
 function generateAmbientEffects() {
     const container = document.getElementById('ambient-wrapper');
@@ -223,94 +226,104 @@ window.addEventListener('beforeunload', () => {
 
 // 4. VIDEO PLAYER SYSTEM
 async function setupVideo() {
-    const container = document.getElementById('videoBox');
-    container.innerHTML = '<div class="video-placeholder-text">Loading video...</div>';
+    const container = document.getElementById("videoBox");
+    container.innerHTML = "Loading video...";
 
-    if (!SUPABASE_URL || SUPABASE_URL.includes('YOUR_')) {
-        container.innerHTML = `<div class="video-error-text">Missing Configuration URL placeholder attributes.</div>`;
+    if (!SUPABASE_URL || SUPABASE_URL.includes("YOUR_")) {
+        container.innerHTML =
+            '<div class="video-error-text">Missing Configuration URL placeholder attributes.</div>';
         return;
     }
 
     try {
-        // Fetch video from Supabase
         const { data: videoData, error } = await window.supabaseClient
-            .from('media')
-            .select('url')
-            .eq('type', 'video')
-            .order('order_no', { ascending: true })
-        // .limit(1);
+            .from("media")
+            .select("url")
+            .eq("type", "video")
+            .order("order_no", { ascending: true })
+            .limit(1);
 
         if (error) throw error;
 
         if (!videoData || videoData.length === 0) {
-            container.innerHTML = '<div class="no-video-text">No video found</div>';
+            container.innerHTML =
+                '<div class="no-video-text">No video found</div>';
             return;
         }
 
-        // Debug: Log the video URL being loaded
-        // console.log('Video URL found:', videoData[0].url);
+        container.innerHTML = "";
 
-        container.innerHTML = '';
+        const video = document.createElement("video");
 
-        const video = document.createElement('video');
+        invitationVideo = video;
+
         video.src = videoData[0].url;
-        video.autoplay = true;
         video.muted = true;
-        // video.loop = true;
+        video.loop = true;
         video.playsInline = true;
-        video.setAttribute('playsinline', '');
-        video.setAttribute('webkit-playsinline', '');
 
-        video.style.width = '100%';
-        video.style.height = '100%';
-        video.style.objectFit = 'cover';
-        video.style.objectPosition = 'center';
+        video.setAttribute("playsinline", "");
+        video.setAttribute("webkit-playsinline", "");
 
-        let currentIndex = 0;
+        video.style.width = "100%";
+        video.style.height = "100%";
+        video.style.objectFit = "cover";
+        video.style.objectPosition = "center";
 
-        function playVideo(index) {
-            console.log('Playing:', videoData[index].url);
-
-            video.src = videoData[index].url;
-            video.load();
-
-            video.play().catch(err => {
-                console.error('Playback error:', err);
-            });
-        }
-
-        video.addEventListener('ended', () => {
-            currentIndex++;
-
-            if (currentIndex >= videoData.length) {
-                currentIndex = 0; // Start over
-            }
-
-            playVideo(currentIndex);
+        video.addEventListener("ended", () => {
+            bgRides.currentTime = 0;
+            bgRides.play().catch(() => { });
         });
 
-        // Add rotation class if needed (change 'rotate-90' to 'rotate-180', 'rotate-270', or remove for no rotation)
-        // video.classList.add('rotate-90');
+        // Keep audio synchronized
+        video.addEventListener("timeupdate", () => {
+            if (!bgRides.paused) {
+                const diff = Math.abs(video.currentTime - bgRides.currentTime);
+
+                if (diff > 0.25) {
+                    bgRides.currentTime = video.currentTime;
+                }
+            }
+        });
 
         video.onerror = () => {
-            container.innerHTML = '<div class="video-error-text">Failed to load video</div>';
+            container.innerHTML =
+                '<div class="video-error-text">Failed to load video</div>';
         };
 
         container.appendChild(video);
 
-        playVideo(currentIndex);
-
     } catch (err) {
         console.error(err);
+
         container.innerHTML =
             '<div class="video-error-text">Failed to load video</div>';
     }
 }
 
 function toggleCard(event) {
-    const card = document.querySelector('.card-container');
-    if (!event.target.closest('.rsvp-form') && !event.target.closest('.guest-list') && !event.target.closest('.guest-list-centered')) {
-        card.classList.toggle('flipped');
+    const card = document.querySelector(".card-container");
+
+    if (
+        !event.target.closest(".rsvp-form") &&
+        !event.target.closest(".guest-list") &&
+        !event.target.closest(".guest-list-centered")
+    ) {
+        card.classList.toggle("flipped");
+
+        if (card.classList.contains("flipped")) {
+            invitationVideo.currentTime = 0;
+            bgRides.currentTime = 0;
+
+            invitationVideo.play().catch(console.error);
+            bgRides.play().catch(console.error);
+        } else {
+            invitationVideo.pause();
+            invitationVideo.currentTime = 0;
+
+            bgRides.pause();
+            bgRides.currentTime = 0;
+        }
     }
 }
 
