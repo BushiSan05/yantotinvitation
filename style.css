@@ -204,10 +204,15 @@ h6 {
     pointer-events: none;
 }
 
+/* Same outer box and padding as .card-container so the envelope's inner
+   surface lands exactly on .card-inner — including when a short viewport
+   flex-shrinks both of them. Absolutely positioned children resolve
+   against the padding box, so they inherit the inset for free. */
 .envelope {
     position: relative;
-    width: calc(var(--card-width) - var(--card-padding) * 2);
-    height: calc(var(--card-height) - var(--card-padding) * 2);
+    width: var(--card-width);
+    height: var(--card-height);
+    padding: var(--card-padding);
     perspective: 1300px;
 }
 
@@ -315,13 +320,15 @@ h6 {
     transform: translateX(58%) rotate(3deg);
 }
 
+/* Sits on the envelope's lower face, below the letter and clear of the
+   checkered strip, so it can never collide with the envelope or fall off
+   a short viewport */
 .envelope-tap-text {
-    /* Taken out of the overlay's flow so a full-card-sized envelope still
-       fits on short screens */
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: max(var(--space-3), calc(var(--vh, 1vh) * 3));
+    left: var(--card-padding);
+    right: var(--card-padding);
+    bottom: var(--space-8);
+    z-index: 4;
     color: var(--racing-yellow);
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
@@ -332,6 +339,12 @@ h6 {
     animation: pulseText 1.6s ease-in-out infinite;
     text-align: center;
     padding: 0 var(--space-4);
+    transition: opacity 0.3s ease;
+}
+
+.envelope-overlay.is-opening .envelope-tap-text {
+    animation: none;
+    opacity: 0;
 }
 
 .envelope-letter-icon {
