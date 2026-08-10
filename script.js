@@ -182,6 +182,11 @@ async function initApp() {
 // finished element. Elements that error out still count: a missing photo
 // must not leave the guest staring at a sealed envelope.
 const PRELOAD_TIMEOUT = 20000;
+// iOS WKWebView — which is what Messenger and Instagram open links in — defers
+// audio and video loading until a user gesture, so canplaythrough may never
+// fire before the tap. Each element therefore gets its own deadline: one
+// element that refuses to buffer costs a few seconds, not the whole gate.
+const ASSET_TIMEOUT = 6000;
 
 function preloadMedia(elements) {
     const targets = elements.filter(Boolean);
@@ -194,7 +199,15 @@ function preloadMedia(elements) {
     };
 
     const buffered = targets.map(el => new Promise(resolve => {
-        const done = () => { onSettled(); resolve(); };
+        let finished = false;
+        const done = () => {
+            if (finished) return;
+            finished = true;
+            clearTimeout(deadline);
+            onSettled();
+            resolve();
+        };
+        const deadline = setTimeout(done, ASSET_TIMEOUT);
 
         if (el.tagName === 'IMG') {
             // complete covers both outcomes: a photo that already failed
