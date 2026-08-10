@@ -78,6 +78,13 @@ html {
     --letter-spacing-tight: -0.025em;
     --letter-spacing-normal: 0;
     --letter-spacing-wide: 0.025em;
+
+    /* Card Geometry — shared by the invitation card and the envelope so the
+       envelope opens into a card of exactly the same size and position */
+    --card-width: clamp(300px, 85vw, 420px);
+    --card-height: clamp(550px, calc(var(--vh, 1vh) * 80), 720px);
+    --card-padding: var(--space-4);
+    --card-radius: 20px;
 }
 
 body {
@@ -187,7 +194,6 @@ h6 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: var(--space-6);
     cursor: pointer;
     transition: opacity 0.6s ease, visibility 0.6s ease;
 }
@@ -198,10 +204,15 @@ h6 {
     pointer-events: none;
 }
 
+/* Same outer box and padding as .card-container so the envelope's inner
+   surface lands exactly on .card-inner — including when a short viewport
+   flex-shrinks both of them. Absolutely positioned children resolve
+   against the padding box, so they inherit the inset for free. */
 .envelope {
     position: relative;
-    width: clamp(170px, 44vw, 240px);
-    height: clamp(320px, 76vw, 440px);
+    width: var(--card-width);
+    height: var(--card-height);
+    padding: var(--card-padding);
     perspective: 1300px;
 }
 
@@ -209,7 +220,7 @@ h6 {
     position: absolute;
     inset: 0;
     background: linear-gradient(180deg, #262626 0%, #0d0d0d 100%);
-    border-radius: 14px;
+    border-radius: var(--card-radius);
     box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
     border: 2px solid rgba(255, 255, 255, 0.08);
     overflow: hidden;
@@ -258,8 +269,8 @@ h6 {
 .envelope-letter {
     position: absolute;
     left: 8%;
-    top: 12%;
-    bottom: 12%;
+    top: 18%;
+    bottom: 18%;
     width: 58%;
     background: linear-gradient(135deg, #fff 0%, #f2f2f2 100%);
     border-radius: 10px;
@@ -309,7 +320,15 @@ h6 {
     transform: translateX(58%) rotate(3deg);
 }
 
+/* Sits on the envelope's lower face, below the letter and clear of the
+   checkered strip, so it can never collide with the envelope or fall off
+   a short viewport */
 .envelope-tap-text {
+    position: absolute;
+    left: var(--card-padding);
+    right: var(--card-padding);
+    bottom: var(--space-8);
+    z-index: 4;
     color: var(--racing-yellow);
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
@@ -320,6 +339,12 @@ h6 {
     animation: pulseText 1.6s ease-in-out infinite;
     text-align: center;
     padding: 0 var(--space-4);
+    transition: opacity 0.3s ease;
+}
+
+.envelope-overlay.is-opening .envelope-tap-text {
+    animation: none;
+    opacity: 0;
 }
 
 .envelope-letter-icon {
@@ -352,12 +377,12 @@ h6 {
 }
 
 .card-container {
-    width: clamp(300px, 85vw, 420px);
-    height: clamp(550px, calc(var(--vh, 1vh) * 80), 720px);
+    width: var(--card-width);
+    height: var(--card-height);
     perspective: 1000px;
     z-index: 10;
     cursor: pointer;
-    padding: var(--space-4);
+    padding: var(--card-padding);
     touch-action: pan-y;
     transition: opacity 0.6s ease;
 }
@@ -370,7 +395,7 @@ h6 {
     transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transform-style: preserve-3d;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-    border-radius: 20px;
+    border-radius: var(--card-radius);
 }
 
 .card-container.flipped .card-inner {
@@ -991,8 +1016,8 @@ h6 {
 
 /* Responsive Optimization Rules */
 @media (min-width: 768px) {
-    .card-container {
-        padding: var(--space-6);
+    :root {
+        --card-padding: var(--space-6);
     }
 
     .card-front,
@@ -1020,12 +1045,9 @@ h6 {
 }
 
 @media (max-width: 400px) {
-    .card-container {
-        padding: var(--space-3);
-    }
-
-    .card-inner {
-        border-radius: 15px;
+    :root {
+        --card-padding: var(--space-3);
+        --card-radius: 15px;
     }
 
     .card-front,
@@ -1055,8 +1077,8 @@ h6 {
 }
 
 @media (max-width: 360px) {
-    .card-container {
-        padding: var(--space-2);
+    :root {
+        --card-padding: var(--space-2);
     }
 
     .slideshow-container {
