@@ -149,40 +149,100 @@ function popBalloon(balloon) {
 window.addEventListener('load', () => {
     // Initialize basic functionality regardless of Supabase
     generateAmbientEffects();
-    audio.load();
 
     // Try to initialize Supabase-dependent features
     if (typeof window.supabase === 'undefined') {
         showDiagnosticError();
+        markMediaReady();
         return;
     }
     initApp();
 });
 
-function initApp() {
+async function initApp() {
     try {
         window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        setupSlideshow();
-        setupVideo();
         bindModalControls();
         loadRSVPList();
+
+        // Build the photo and video elements, then hold the envelope shut
+        // until every photo, the video and all three audio tracks are
+        // buffered, so nothing pops in mid-invitation.
+        const [slides, video] = await Promise.all([setupSlideshow(), setupVideo()]);
+        await preloadMedia([...slides, video, audio, engineSound, bgRides]);
     } catch (err) {
         showDiagnosticError();
+    } finally {
+        markMediaReady();
     }
+}
+
+// ---- Media preloading ----
+// Resolves once every element has buffered, lighting one start light per
+// finished element. Elements that error out still count: a missing photo
+// must not leave the guest staring at a sealed envelope.
+const PRELOAD_TIMEOUT = 20000;
+
+function preloadMedia(elements) {
+    const targets = elements.filter(Boolean);
+    if (!targets.length) return Promise.resolve();
+
+    let settled = 0;
+    const onSettled = () => {
+        settled += 1;
+        setStartLights(settled / targets.length);
+    };
+
+    const buffered = targets.map(el => new Promise(resolve => {
+        const done = () => { onSettled(); resolve(); };
+
+        if (el.tagName === 'IMG') {
+            if (el.complete && el.naturalWidth) { done(); return; }
+            el.addEventListener('load', done, { once: true });
+            el.addEventListener('error', done, { once: true });
+            return;
+        }
+
+        // Audio waits for HAVE_ENOUGH_DATA (readyState 4) since it starts the
+        // moment the envelope opens; the video only needs enough to play
+        // (readyState 3) because it lives on the card's back face.
+        const wanted = el.tagName === 'VIDEO' ? 3 : 4;
+        if (el.readyState >= wanted) { done(); return; }
+        el.preload = 'auto';
+        el.addEventListener(wanted === 4 ? 'canplaythrough' : 'canplay', done, { once: true });
+        el.addEventListener('error', done, { once: true });
+        el.load();
+    }));
+
+    // A stalled asset on a bad connection must not trap the guest either.
+    return Promise.race([
+        Promise.all(buffered),
+        new Promise(resolve => setTimeout(resolve, PRELOAD_TIMEOUT)),
+    ]);
+}
+
+function setStartLights(fraction) {
+    const lights = document.querySelectorAll('.start-light');
+    const lit = Math.round(fraction * lights.length);
+    lights.forEach((light, i) => light.classList.toggle('is-lit', i < lit));
 }
 
 function showDiagnosticError() { }
 
 // 1. DYNAMIC SLIDESHOW SYSTEM
 let slideshowInterval = null;
+const SLIDE_INTERVAL = 3000;
 
+// Builds the slides but does NOT start cycling them — startSlideshow() does
+// that once the card is actually on screen, so the first photo gets its full
+// turn instead of being swapped out behind the envelope.
 async function setupSlideshow() {
     const container = document.getElementById('slideshowBox');
     container.innerHTML = '<div class="placeholder-text">Loading memories...</div>';
 
     if (!SUPABASE_URL || SUPABASE_URL.includes('YOUR_')) {
         container.innerHTML = `<div class="slideshow-error-text">Missing Configuration URL placeholder attributes.</div>`;
-        return;
+        return [];
     }
 
     try {
@@ -198,43 +258,43 @@ async function setupSlideshow() {
 
         if (!mediaData || mediaData.length === 0) {
             container.innerHTML = '<div class="no-photos-text">No photos found</div>';
-            return;
+            return [];
         }
-
-        // Debug: Log the URLs being loaded
-        console.log('Media URLs found:', mediaData.map(m => m.url));
 
         container.innerHTML = '';
 
-        mediaData.forEach((media, index) => {
+        return mediaData.map((media, index) => {
             const img = document.createElement('img');
             img.src = media.url;
             img.classList.add('slide');
-            if (index === 0) img.classList.add('active');
             img.alt = `Birthday memory photo ${index + 1}`;
             img.setAttribute('role', 'img');
-
-            img.onerror = () => { img.src = "https://via.placeholder.com/400x300?text=Image+Not+Found"; };
             container.appendChild(img);
+            return img;
         });
-
-        let currentSlideIndex = 0;
-        // Clear any existing interval
-        if (slideshowInterval) {
-            clearInterval(slideshowInterval);
-        }
-        slideshowInterval = setInterval(() => {
-            const slides = container.querySelectorAll('.slide');
-            if (slides.length <= 1) return;
-
-            slides[currentSlideIndex].classList.remove('active');
-            currentSlideIndex = (currentSlideIndex + 1) % slides.length;
-            slides[currentSlideIndex].classList.add('active');
-        }, 3000);
 
     } catch (err) {
         container.innerHTML = '<div class="slideshow-error-text">Failed to load photos</div>';
+        return [];
     }
+}
+
+// Shows the first photo and starts the rotation. Called when the card is
+// revealed, so no photo is spent while the envelope is still closed.
+function startSlideshow() {
+    const container = document.getElementById('slideshowBox');
+    const slides = container.querySelectorAll('.slide');
+    if (!slides.length || slideshowInterval) return;
+
+    let currentSlideIndex = 0;
+    slides[0].classList.add('active');
+    if (slides.length === 1) return;
+
+    slideshowInterval = setInterval(() => {
+        slides[currentSlideIndex].classList.remove('active');
+        currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+        slides[currentSlideIndex].classList.add('active');
+    }, SLIDE_INTERVAL);
 }
 
 // Cleanup on page unload
@@ -252,7 +312,7 @@ async function setupVideo() {
     if (!SUPABASE_URL || SUPABASE_URL.includes("YOUR_")) {
         container.innerHTML =
             '<div class="video-error-text">Missing Configuration URL placeholder attributes.</div>';
-        return;
+        return null;
     }
 
     try {
@@ -268,7 +328,7 @@ async function setupVideo() {
         if (!videoData || videoData.length === 0) {
             container.innerHTML =
                 '<div class="no-video-text">No video found</div>';
-            return;
+            return null;
         }
 
         container.innerHTML = "";
@@ -281,6 +341,7 @@ async function setupVideo() {
         video.muted = true;
         video.loop = true;
         video.playsInline = true;
+        video.preload = "auto";
 
         video.setAttribute("playsinline", "");
         video.setAttribute("webkit-playsinline", "");
@@ -307,12 +368,12 @@ async function setupVideo() {
         };
 
         container.appendChild(video);
+        return video;
 
     } catch (err) {
-        console.error(err);
-
         container.innerHTML =
             '<div class="video-error-text">Failed to load video</div>';
+        return null;
     }
 }
 
@@ -760,9 +821,51 @@ let engineGainNode = null;
 // setupEngineSound();
 
 // ---- Tap-to-Open Envelope: the gesture that unlocks bgMusic autoplay ----
+// The envelope stays sealed until every asset is buffered. A tap before then
+// is remembered rather than ignored, so an eager guest isn't left tapping a
+// dead envelope.
+let mediaReady = false;
+let openWasRequested = false;
+
+// iOS only allows audio that was started from a user gesture. When the guest
+// taps early we consume that gesture here, so the engine sound still plays
+// when the queued open runs a moment later.
+function unlockAudioPlayback() {
+    [engineSound, audio, bgRides].filter(Boolean).forEach(el => {
+        const wasMuted = el.muted;
+        el.muted = true;
+        el.play().then(() => {
+            el.pause();
+            el.currentTime = 0;
+            el.muted = wasMuted;
+        }).catch(() => { el.muted = wasMuted; });
+    });
+}
+
+function markMediaReady() {
+    if (mediaReady) return;
+    mediaReady = true;
+
+    const overlay = document.getElementById('envelopeOverlay');
+    if (overlay) overlay.classList.remove('is-loading');
+    setStartLights(1);
+
+    const tapText = document.getElementById('envelopeTapText');
+    if (tapText) tapText.textContent = '🏁 START YOUR ENGINES 🏁';
+
+    if (openWasRequested) openEnvelope();
+}
+
 function openEnvelope() {
     const overlay = document.getElementById('envelopeOverlay');
     if (!overlay || overlay.classList.contains('is-triggered')) return;
+
+    if (!mediaReady) {
+        openWasRequested = true;
+        unlockAudioPlayback();
+        return;
+    }
+
     overlay.classList.add('is-triggered'); // guard against double-tap
 
     let bgMusicStarted = false;
@@ -817,8 +920,11 @@ function openEnvelope() {
         overlay.classList.add('is-hidden');
     }, OPEN_DELAY + ANIMATION_DURATION);
 
+    // .card-container fades in over 0.6s; only once it is actually on screen
+    // does the first photo start its 3s turn.
     setTimeout(() => {
         overlay.style.display = 'none';
+        startSlideshow();
     }, OPEN_DELAY + ANIMATION_DURATION + 650);
 }
 
