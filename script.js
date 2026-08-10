@@ -285,11 +285,6 @@ async function setupVideo() {
         video.setAttribute("playsinline", "");
         video.setAttribute("webkit-playsinline", "");
 
-        video.style.width = "100%";
-        video.style.height = "100%";
-        video.style.objectFit = "cover";
-        video.style.objectPosition = "center";
-
         video.addEventListener("ended", () => {
             bgRides.currentTime = 0;
             bgRides.play().catch(() => { });
@@ -809,9 +804,9 @@ function openEnvelope() {
     const card = document.querySelector('.card-container');
 
     // Give the engine sound a brief beat on its own before the flap swings
-    // open (right-to-left) and the card slides out to the right.
+    // open, right-to-left.
     const OPEN_DELAY = 300;
-    const ANIMATION_DURATION = 1050; // flap 750ms + letter's own 250ms delay + 800ms
+    const ANIMATION_DURATION = 850; // flap 750ms + a beat on the open envelope
 
     setTimeout(() => {
         overlay.classList.add('is-opening');
