@@ -266,27 +266,6 @@ h6 {
     z-index: 2;
 }
 
-.envelope-letter {
-    position: absolute;
-    left: 8%;
-    top: 18%;
-    bottom: 18%;
-    width: 58%;
-    background: linear-gradient(135deg, #fff 0%, #f2f2f2 100%);
-    border-radius: 10px;
-    border: 2px dashed var(--primary);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    font-size: clamp(1.5rem, 6vw, 2rem);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
-    transform: translateX(0%);
-    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.25s;
-    z-index: 2;
-}
-
 /* Right-hinged flap: rests over the right side, swings open right-to-left
    around a hinge on the envelope's right edge, then vanishes past 90deg
    thanks to backface-visibility: hidden (same trick as the card flip). */
@@ -316,13 +295,8 @@ h6 {
     transform: rotateY(-150deg);
 }
 
-.envelope-overlay.is-opening .envelope-letter {
-    transform: translateX(58%) rotate(3deg);
-}
-
-/* Sits on the envelope's lower face, below the letter and clear of the
-   checkered strip, so it can never collide with the envelope or fall off
-   a short viewport */
+/* Sits on the envelope's lower face, clear of the checkered strip, so it
+   can never collide with the envelope or fall off a short viewport */
 .envelope-tap-text {
     position: absolute;
     left: var(--card-padding);
@@ -345,16 +319,6 @@ h6 {
 .envelope-overlay.is-opening .envelope-tap-text {
     animation: none;
     opacity: 0;
-}
-
-.envelope-letter-icon {
-    font-size: 1em;
-    line-height: 1;
-}
-
-.envelope-letter-flag {
-    font-size: 0.6em;
-    line-height: 1;
 }
 
 @keyframes pulseText {
