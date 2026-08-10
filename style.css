@@ -300,15 +300,17 @@ h6 {
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: #3a0b07;
+    /* background: #3a0b07; */
+    background: radial-gradient(circle at 35% 30%, #ff6a5c, var(--primary) 65%);
+    box-shadow: 0 0 10px rgba(255, 30, 0, 0.9);
     border: 1px solid rgba(0, 0, 0, 0.6);
     transition: background 0.25s ease, box-shadow 0.25s ease;
 }
 
-.start-light.is-lit {
+/* .start-light.is-lit {
     background: radial-gradient(circle at 35% 30%, #ff6a5c, var(--primary) 65%);
     box-shadow: 0 0 10px rgba(255, 30, 0, 0.9);
-}
+} */
 
 /* Race number in the style of a rider's jersey: heavy italic, knocked out
    in white over a red shadow so it reads at any size */

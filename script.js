@@ -192,11 +192,11 @@ function preloadMedia(elements) {
     const targets = elements.filter(Boolean);
     if (!targets.length) return Promise.resolve();
 
-    let settled = 0;
-    const onSettled = () => {
-        settled += 1;
-        setStartLights(settled / targets.length);
-    };
+    // let settled = 0;
+    // const onSettled = () => {
+    //     settled += 1;
+    //     setStartLights(settled / targets.length);
+    // };
 
     const buffered = targets.map(el => new Promise(resolve => {
         let finished = false;
@@ -237,11 +237,11 @@ function preloadMedia(elements) {
     ]);
 }
 
-function setStartLights(fraction) {
-    const lights = document.querySelectorAll('.start-light');
-    const lit = Math.round(fraction * lights.length);
-    lights.forEach((light, i) => light.classList.toggle('is-lit', i < lit));
-}
+// function setStartLights(fraction) {
+//     const lights = document.querySelectorAll('.start-light');
+//     const lit = Math.round(fraction * lights.length);
+//     lights.forEach((light, i) => light.classList.toggle('is-lit', i < lit));
+// }
 
 function showDiagnosticError() { }
 
@@ -864,7 +864,7 @@ function markMediaReady() {
 
     const overlay = document.getElementById('envelopeOverlay');
     if (overlay) overlay.classList.remove('is-loading');
-    setStartLights(1);
+    // setStartLights(1);
 
     const tapText = document.getElementById('envelopeTapText');
     if (tapText) tapText.textContent = '🏁 START YOUR ENGINES 🏁';
