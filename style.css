@@ -85,6 +85,10 @@ html {
     --card-height: clamp(550px, calc(var(--vh, 1vh) * 80), 720px);
     --card-padding: var(--space-4);
     --card-radius: 20px;
+
+    /* Cap on the slot the card back gives the video; below it the slot just
+       takes whatever height the rest of the back leaves over */
+    --video-max-height: clamp(150px, calc(var(--vh, 1vh) * 30), 260px);
 }
 
 body {
@@ -521,24 +525,29 @@ h6 {
     text-align: center;
 }
 
-/* Video Container */
+/* Video Container — a fixed slot in the card back's column, between a floor
+   and a cap, so the card itself never has to resize for the clip. */
 .video-container {
+    flex: 1 1 auto;
     width: 100%;
-    /* height: 130px; */
-    /* background: rgba(0, 0, 0, 0.05); */
-    aspect-ratio: 4 / 3;
+    min-height: 0;
+    max-height: var(--video-max-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 12px;
     overflow: hidden;
     background: #000;
-    /* position: relative; */
-    /* border: 2px solid #eee; */
-    /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); */
 }
 
+/* Scale to the largest size that fits the slot, at the clip's own ratio, so
+   the whole frame is visible instead of being cropped to fill */
 .video-container video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
     object-position: center;
 }
 
@@ -1055,12 +1064,12 @@ h6 {
 }
 
 @media (max-height: 600px) {
-    .slideshow-container {
-        min-height: 220px;
+    :root {
+        --video-max-height: clamp(110px, calc(var(--vh, 1vh) * 26), 160px);
     }
 
-    .video-container {
-        aspect-ratio: 16 / 9;
+    .slideshow-container {
+        min-height: 220px;
     }
 
     .guest-list-box {
