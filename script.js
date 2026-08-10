@@ -182,6 +182,11 @@ async function initApp() {
 // finished element. Elements that error out still count: a missing photo
 // must not leave the guest staring at a sealed envelope.
 const PRELOAD_TIMEOUT = 20000;
+// iOS WKWebView — which is what Messenger and Instagram open links in — defers
+// audio and video loading until a user gesture, so canplaythrough may never
+// fire before the tap. Each element therefore gets its own deadline: one
+// element that refuses to buffer costs a few seconds, not the whole gate.
+const ASSET_TIMEOUT = 6000;
 
 function preloadMedia(elements) {
     const targets = elements.filter(Boolean);
@@ -194,10 +199,21 @@ function preloadMedia(elements) {
     };
 
     const buffered = targets.map(el => new Promise(resolve => {
-        const done = () => { onSettled(); resolve(); };
+        let finished = false;
+        const done = () => {
+            if (finished) return;
+            finished = true;
+            clearTimeout(deadline);
+            onSettled();
+            resolve();
+        };
+        const deadline = setTimeout(done, ASSET_TIMEOUT);
 
         if (el.tagName === 'IMG') {
-            if (el.complete && el.naturalWidth) { done(); return; }
+            // complete covers both outcomes: a photo that already failed
+            // fires nothing once we attach listeners, so it would otherwise
+            // hold the envelope shut until the timeout.
+            if (el.complete) { done(); return; }
             el.addEventListener('load', done, { once: true });
             el.addEventListener('error', done, { once: true });
             return;
@@ -915,16 +931,16 @@ function openEnvelope() {
         overlay.classList.add('is-opening');
     }, OPEN_DELAY);
 
+    // The first photo goes up in the same frame the card starts fading in,
+    // so the card is never revealed with an empty photo frame.
     setTimeout(() => {
         if (card) card.classList.remove('pre-reveal');
         overlay.classList.add('is-hidden');
+        startSlideshow();
     }, OPEN_DELAY + ANIMATION_DURATION);
 
-    // .card-container fades in over 0.6s; only once it is actually on screen
-    // does the first photo start its 3s turn.
     setTimeout(() => {
         overlay.style.display = 'none';
-        startSlideshow();
     }, OPEN_DELAY + ANIMATION_DURATION + 650);
 }
 

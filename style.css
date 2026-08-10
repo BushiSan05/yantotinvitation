@@ -82,7 +82,11 @@ html {
     /* Card Geometry — shared by the invitation card and the envelope so the
        envelope opens into a card of exactly the same size and position */
     --card-width: clamp(300px, 85vw, 420px);
-    --card-height: clamp(550px, calc(var(--vh, 1vh) * 80), 720px);
+    /* The min() cap wins on viewports shorter than the 550px floor — an
+       in-app browser with the soft keyboard up, for instance — so the card
+       shrinks with the screen instead of running off the bottom of it */
+    --card-height: min(clamp(550px, calc(var(--vh, 1vh) * 80), 720px),
+            calc(var(--vh, 1vh) * 100 - var(--space-6)));
     --card-padding: var(--space-4);
     --card-radius: 20px;
 
@@ -210,8 +214,9 @@ h6 {
 
 /* Same outer box and padding as .card-container so the envelope's inner
    surface lands exactly on .card-inner — including when a short viewport
-   flex-shrinks both of them. Absolutely positioned children resolve
-   against the padding box, so they inherit the inset for free. */
+   flex-shrinks both of them. Absolutely positioned children resolve against
+   the padding box, not the content box, so the envelope's own faces have to
+   repeat --card-padding to land on .card-inner rather than overhang it. */
 .envelope {
     position: relative;
     width: var(--card-width);
@@ -222,7 +227,7 @@ h6 {
 
 .envelope-back {
     position: absolute;
-    inset: 0;
+    inset: var(--card-padding);
     background: linear-gradient(180deg, #262626 0%, #0d0d0d 100%);
     border-radius: var(--card-radius);
     box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
@@ -389,10 +394,10 @@ h6 {
    thanks to backface-visibility: hidden (same trick as the card flip). */
 .envelope-flap {
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 64%;
-    height: 100%;
+    top: var(--card-padding);
+    right: var(--card-padding);
+    bottom: var(--card-padding);
+    width: calc((100% - 2 * var(--card-padding)) * 0.64);
     background: linear-gradient(160deg, var(--primary) 0%, #b30f00 100%);
     clip-path: polygon(100% 0, 100% 100%, 0 50%);
     transform-origin: right center;
@@ -437,10 +442,13 @@ h6 {
     position: absolute;
     left: var(--card-padding);
     right: var(--card-padding);
-    bottom: var(--space-7);
+    bottom: calc(var(--space-7) + var(--card-padding));
     z-index: 4;
     color: var(--racing-yellow);
-    font-size: var(--font-size-lg);
+    /* Scales with the viewport so it stays on one line on a 360px phone:
+       wrapped, the second line drops onto the marque below it */
+    font-size: clamp(0.75rem, 3.1vw, var(--font-size-lg));
+    white-space: nowrap;
     font-weight: var(--font-weight-bold);
     font-style: italic;
     letter-spacing: var(--letter-spacing-wide);
@@ -654,7 +662,12 @@ h6 {
     justify-content: flex-start;
     align-items: stretch;
     gap: var(--space-3);
-    overflow: hidden;
+    /* The page itself never scrolls, so once the soft keyboard squeezes the
+       card the RSVP button is only reachable if the back face scrolls */
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
 }
 
 .card-back h2 {
