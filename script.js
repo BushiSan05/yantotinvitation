@@ -197,7 +197,10 @@ function preloadMedia(elements) {
         const done = () => { onSettled(); resolve(); };
 
         if (el.tagName === 'IMG') {
-            if (el.complete && el.naturalWidth) { done(); return; }
+            // complete covers both outcomes: a photo that already failed
+            // fires nothing once we attach listeners, so it would otherwise
+            // hold the envelope shut until the timeout.
+            if (el.complete) { done(); return; }
             el.addEventListener('load', done, { once: true });
             el.addEventListener('error', done, { once: true });
             return;
@@ -915,16 +918,16 @@ function openEnvelope() {
         overlay.classList.add('is-opening');
     }, OPEN_DELAY);
 
+    // The first photo goes up in the same frame the card starts fading in,
+    // so the card is never revealed with an empty photo frame.
     setTimeout(() => {
         if (card) card.classList.remove('pre-reveal');
         overlay.classList.add('is-hidden');
+        startSlideshow();
     }, OPEN_DELAY + ANIMATION_DURATION);
 
-    // .card-container fades in over 0.6s; only once it is actually on screen
-    // does the first photo start its 3s turn.
     setTimeout(() => {
         overlay.style.display = 'none';
-        startSlideshow();
     }, OPEN_DELAY + ANIMATION_DURATION + 650);
 }
 
