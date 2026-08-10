@@ -250,24 +250,138 @@ h6 {
     bottom: 0;
 }
 
-.envelope-number-badge {
+/* Carbon weave plus the diagonal red/yellow slash of a factory livery */
+.envelope-livery {
     position: absolute;
-    top: var(--space-5);
-    left: var(--space-3);
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: #fff;
-    border: 3px solid var(--primary);
+    inset: 0;
+    z-index: 1;
+    background-image:
+        linear-gradient(115deg, transparent 30%, var(--primary) 30%, var(--primary) 38%, transparent 38%),
+        linear-gradient(115deg, transparent 39.5%, var(--racing-yellow) 39.5%, var(--racing-yellow) 42.5%, transparent 42.5%),
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 4px),
+        repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.04) 0 2px, transparent 2px 4px);
+    opacity: 0.9;
+}
+
+/* Asphalt apron with the painted grid box the "bike" lines up in */
+.envelope-asphalt {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 14px;
+    height: 44%;
+    z-index: 2;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.82) 45%);
     display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 var(--space-3) calc(var(--space-8) + var(--space-6));
+}
+
+/* The painted grid box the rider lines up in, doubling as the frame for
+   the event marque */
+.envelope-grid-slot {
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 2px;
+    /* Nudged off-centre so the closed flap's leading edge doesn't cut
+       across the marque */
+    margin-right: 8%;
+    padding: var(--space-2) var(--space-4) var(--space-3);
+    border: 2px solid rgba(255, 255, 255, 0.55);
+    border-bottom: none;
+    border-radius: 2px 2px 0 0;
+}
+
+/* Start-lights gantry — each light comes on as the media finishes preloading,
+   and all five go out on tap, the way a MotoGP race actually starts */
+.start-lights {
+    position: absolute;
+    top: 16%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-radius: 8px;
+    background: linear-gradient(180deg, #1c1c1c, #0a0a0a);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
+}
+
+.start-light {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #3a0b07;
+    border: 1px solid rgba(0, 0, 0, 0.6);
+    transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.start-light.is-lit {
+    background: radial-gradient(circle at 35% 30%, #ff6a5c, var(--primary) 65%);
+    box-shadow: 0 0 10px rgba(255, 30, 0, 0.9);
+}
+
+/* Rider number board */
+.envelope-plate {
+    position: absolute;
+    top: var(--space-6);
+    left: var(--space-4);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: var(--space-1) var(--space-2);
+    background: #fff;
+    border: 3px solid var(--primary);
+    border-radius: 6px;
+    transform: skewX(-8deg);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.envelope-plate-number {
+    font-family: var(--font-family-display);
+    font-size: 1.6rem;
     font-weight: var(--font-weight-bold);
     font-style: italic;
+    line-height: 1;
     color: var(--primary);
-    font-size: var(--font-size-lg);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
-    z-index: 2;
+}
+
+.envelope-plate-name {
+    font-size: 0.55rem;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+    color: var(--secondary);
+}
+
+.envelope-marque,
+.envelope-marque-sub {
+    font-family: var(--font-family-display);
+    font-style: italic;
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    white-space: nowrap;
+    line-height: 1.05;
+    color: #fff;
+}
+
+.envelope-marque {
+    font-size: clamp(1.2rem, 5vw, 1.7rem);
+    letter-spacing: var(--letter-spacing-tight);
+    text-shadow: 2px 2px 0 var(--primary), 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+
+.envelope-marque-sub {
+    font-size: clamp(0.7rem, 2.8vw, 0.9rem);
+    letter-spacing: var(--letter-spacing-wide);
+    color: var(--racing-yellow);
 }
 
 /* Right-hinged flap: rests over the right side, swings open right-to-left
@@ -295,8 +409,26 @@ h6 {
     background: linear-gradient(135deg, transparent 42%, rgba(255, 255, 255, 0.4) 50%, transparent 58%);
 }
 
+/* Chequered seal running down the flap's leading edge */
+.envelope-flap-checkers {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 18px;
+    background-image: conic-gradient(#000 0% 25%, #fff 0% 50%);
+    background-size: 9px 9px;
+    opacity: 0.9;
+}
+
 .envelope-overlay.is-opening .envelope-flap {
     transform: rotateY(-150deg);
+}
+
+/* Lights out — and away we go */
+.envelope-overlay.is-opening .start-light {
+    background: #3a0b07;
+    box-shadow: none;
 }
 
 /* Sits on the envelope's lower face, clear of the checkered strip, so it
@@ -305,7 +437,7 @@ h6 {
     position: absolute;
     left: var(--card-padding);
     right: var(--card-padding);
-    bottom: var(--space-8);
+    bottom: var(--space-7);
     z-index: 4;
     color: var(--racing-yellow);
     font-size: var(--font-size-lg);
@@ -323,6 +455,17 @@ h6 {
 .envelope-overlay.is-opening .envelope-tap-text {
     animation: none;
     opacity: 0;
+}
+
+/* While the media preloads the envelope reads as a warm-up lap, not a
+   dead tap target */
+.envelope-overlay.is-loading .envelope-tap-text {
+    color: var(--accent);
+    animation-duration: 1s;
+}
+
+.envelope-overlay.is-loading {
+    cursor: progress;
 }
 
 @keyframes pulseText {
