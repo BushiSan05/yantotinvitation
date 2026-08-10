@@ -893,7 +893,7 @@ function openEnvelope() {
 
     // Play the engine sound the INSTANT the envelope is tapped — this is
     // the tap feedback itself, fired before any animation classes are
-    // added, so it never feels tied to the flap/slide motion.
+    // added, so it never feels tied to the lights going green.
     if (engineSound) {
         engineSound.currentTime = 0;
         engineSound.volume = 1;
@@ -922,14 +922,10 @@ function openEnvelope() {
     overlay.setAttribute('aria-hidden', 'true');
     const card = document.querySelector('.card-container');
 
-    // Give the engine sound a brief beat on its own before the flap swings
-    // open, right-to-left.
-    const OPEN_DELAY = 300;
-    const ANIMATION_DURATION = 850; // flap 750ms + a beat on the open envelope
-
-    setTimeout(() => {
-        overlay.classList.add('is-opening');
-    }, OPEN_DELAY);
+    // Lights green on the tap itself, then a beat on the green lights and
+    // the engine note before the card takes over.
+    overlay.classList.add('is-opening');
+    const GREEN_HOLD = 900;
 
     // The first photo goes up in the same frame the card starts fading in,
     // so the card is never revealed with an empty photo frame.
@@ -937,11 +933,11 @@ function openEnvelope() {
         if (card) card.classList.remove('pre-reveal');
         overlay.classList.add('is-hidden');
         startSlideshow();
-    }, OPEN_DELAY + ANIMATION_DURATION);
+    }, GREEN_HOLD);
 
     setTimeout(() => {
         overlay.style.display = 'none';
-    }, OPEN_DELAY + ANIMATION_DURATION + 650);
+    }, GREEN_HOLD + 650);
 }
 
 function envelopeKeyHandler(e) {

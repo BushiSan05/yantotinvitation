@@ -268,46 +268,25 @@ h6 {
     opacity: 0.9;
 }
 
-/* Asphalt apron with the painted grid box the "bike" lines up in */
-.envelope-asphalt {
+/* Gantry, race number, call to action — stacked down the middle of the
+   envelope, with a dark scrim under them so the livery can't wash them out */
+.envelope-stack {
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 14px;
-    height: 44%;
+    inset: 14px 0;
     z-index: 2;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.82) 45%);
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding: 0 var(--space-3) calc(var(--space-8) + var(--space-6));
-}
-
-/* The painted grid box the rider lines up in, doubling as the frame for
-   the event marque */
-.envelope-grid-slot {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    /* Nudged off-centre so the closed flap's leading edge doesn't cut
-       across the marque */
-    margin-right: 8%;
-    padding: var(--space-2) var(--space-4) var(--space-3);
-    border: 2px solid rgba(255, 255, 255, 0.55);
-    border-bottom: none;
-    border-radius: 2px 2px 0 0;
+    gap: clamp(var(--space-3), 4vh, var(--space-6));
+    padding: var(--space-4);
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0) 72%);
 }
 
-/* Start-lights gantry — each light comes on as the media finishes preloading,
-   and all five go out on tap, the way a MotoGP race actually starts */
+/* Start-lights gantry — each light comes on red as the media finishes
+   preloading, and the whole row turns green on tap, the way a MotoGP race
+   actually starts */
 .start-lights {
-    position: absolute;
-    top: 16%;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
     display: flex;
     gap: var(--space-2);
     padding: var(--space-2) var(--space-3);
@@ -331,122 +310,33 @@ h6 {
     box-shadow: 0 0 10px rgba(255, 30, 0, 0.9);
 }
 
-/* Rider number board */
-.envelope-plate {
-    position: absolute;
-    top: var(--space-6);
-    left: var(--space-4);
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding: var(--space-1) var(--space-2);
-    background: #fff;
-    border: 3px solid var(--primary);
-    border-radius: 6px;
-    transform: skewX(-8deg);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
-}
-
-.envelope-plate-number {
+/* Race number in the style of a rider's jersey: heavy italic, knocked out
+   in white over a red shadow so it reads at any size */
+.envelope-number {
     font-family: var(--font-family-display);
-    font-size: 1.6rem;
+    font-size: clamp(4.5rem, 30vw, 9rem);
     font-weight: var(--font-weight-bold);
     font-style: italic;
-    line-height: 1;
-    color: var(--primary);
-}
-
-.envelope-plate-name {
-    font-size: 0.55rem;
-    font-weight: var(--font-weight-bold);
-    letter-spacing: var(--letter-spacing-wide);
-    text-transform: uppercase;
-    color: var(--secondary);
-}
-
-.envelope-marque,
-.envelope-marque-sub {
-    font-family: var(--font-family-display);
-    font-style: italic;
-    font-weight: var(--font-weight-bold);
-    text-transform: uppercase;
-    white-space: nowrap;
-    line-height: 1.05;
-    color: #fff;
-}
-
-.envelope-marque {
-    font-size: clamp(1.2rem, 5vw, 1.7rem);
+    line-height: 0.85;
     letter-spacing: var(--letter-spacing-tight);
-    text-shadow: 2px 2px 0 var(--primary), 0 6px 18px rgba(0, 0, 0, 0.6);
+    color: #fff;
+    -webkit-text-stroke: 3px var(--primary);
+    text-shadow:
+        6px 6px 0 var(--primary),
+        0 10px 30px rgba(0, 0, 0, 0.75);
+    transform: skewX(-8deg);
 }
 
-.envelope-marque-sub {
-    font-size: clamp(0.7rem, 2.8vw, 0.9rem);
-    letter-spacing: var(--letter-spacing-wide);
-    color: var(--racing-yellow);
-}
-
-/* Right-hinged flap: rests over the right side, swings open right-to-left
-   around a hinge on the envelope's right edge, then vanishes past 90deg
-   thanks to backface-visibility: hidden (same trick as the card flip). */
-.envelope-flap {
-    position: absolute;
-    top: var(--card-padding);
-    right: var(--card-padding);
-    bottom: var(--card-padding);
-    width: calc((100% - 2 * var(--card-padding)) * 0.64);
-    background: linear-gradient(160deg, var(--primary) 0%, #b30f00 100%);
-    clip-path: polygon(100% 0, 100% 100%, 0 50%);
-    transform-origin: right center;
-    backface-visibility: hidden;
-    transform: rotateY(0deg);
-    transition: transform 0.75s cubic-bezier(0.65, 0, 0.35, 1);
-    z-index: 3;
-    overflow: hidden;
-}
-
-.envelope-flap-stripe {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, transparent 42%, rgba(255, 255, 255, 0.4) 50%, transparent 58%);
-}
-
-/* Chequered seal running down the flap's leading edge */
-.envelope-flap-checkers {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    width: 18px;
-    background-image: conic-gradient(#000 0% 25%, #fff 0% 50%);
-    background-size: 9px 9px;
-    opacity: 0.9;
-}
-
-.envelope-overlay.is-opening .envelope-flap {
-    transform: rotateY(-150deg);
-}
-
-/* Lights out — and away we go */
+/* Green light — and away we go */
 .envelope-overlay.is-opening .start-light {
-    background: #3a0b07;
-    box-shadow: none;
+    background: radial-gradient(circle at 35% 30%, #9dffb0, #00c853 65%);
+    box-shadow: 0 0 12px rgba(0, 200, 83, 0.95);
 }
 
-/* Sits on the envelope's lower face, clear of the checkered strip, so it
-   can never collide with the envelope or fall off a short viewport */
 .envelope-tap-text {
-    position: absolute;
-    left: var(--card-padding);
-    right: var(--card-padding);
-    bottom: calc(var(--space-7) + var(--card-padding));
-    z-index: 4;
+    margin: 0;
     color: var(--racing-yellow);
-    /* Scales with the viewport so it stays on one line on a 360px phone:
-       wrapped, the second line drops onto the marque below it */
+    /* Scales with the viewport so it stays on one line on a 360px phone */
     font-size: clamp(0.75rem, 3.1vw, var(--font-size-lg));
     white-space: nowrap;
     font-weight: var(--font-weight-bold);
