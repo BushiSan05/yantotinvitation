@@ -7,6 +7,7 @@
 html {
     overflow: hidden;
     height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
     width: 100vw;
 }
 
@@ -84,6 +85,7 @@ body {
     background: var(--bg);
     color: var(--text-dark);
     height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
     width: 100vw;
     display: flex;
     flex-direction: column;
@@ -96,6 +98,10 @@ body {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
     -webkit-overflow-scrolling: auto;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
 }
 
 /* Base Heading Styles */
@@ -171,14 +177,189 @@ h6 {
 }
 
 /* 3D Flip Card Layout styling */
+/* ---- Tap-to-Open Envelope Overlay ---- */
+.envelope-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-6);
+    cursor: pointer;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+.envelope-overlay.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.envelope {
+    position: relative;
+    width: clamp(170px, 44vw, 240px);
+    height: clamp(320px, 76vw, 440px);
+    perspective: 1300px;
+}
+
+.envelope-back {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #262626 0%, #0d0d0d 100%);
+    border-radius: 14px;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+/* Checkered start/finish-line accents, MotoGP grid style */
+.envelope-checker-strip {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 14px;
+    background-image: conic-gradient(#000 0% 25%, #fff 0% 50%);
+    background-size: 14px 14px;
+    z-index: 1;
+    opacity: 0.9;
+}
+
+.envelope-checker-strip-top {
+    top: 0;
+}
+
+.envelope-checker-strip-bottom {
+    bottom: 0;
+}
+
+.envelope-number-badge {
+    position: absolute;
+    top: var(--space-5);
+    left: var(--space-3);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--font-weight-bold);
+    font-style: italic;
+    color: var(--primary);
+    font-size: var(--font-size-lg);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+    z-index: 2;
+}
+
+.envelope-letter {
+    position: absolute;
+    left: 8%;
+    top: 12%;
+    bottom: 12%;
+    width: 58%;
+    background: linear-gradient(135deg, #fff 0%, #f2f2f2 100%);
+    border-radius: 10px;
+    border: 2px dashed var(--primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    font-size: clamp(1.5rem, 6vw, 2rem);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+    transform: translateX(0%);
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.25s;
+    z-index: 2;
+}
+
+/* Right-hinged flap: rests over the right side, swings open right-to-left
+   around a hinge on the envelope's right edge, then vanishes past 90deg
+   thanks to backface-visibility: hidden (same trick as the card flip). */
+.envelope-flap {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 64%;
+    height: 100%;
+    background: linear-gradient(160deg, var(--primary) 0%, #b30f00 100%);
+    clip-path: polygon(100% 0, 100% 100%, 0 50%);
+    transform-origin: right center;
+    backface-visibility: hidden;
+    transform: rotateY(0deg);
+    transition: transform 0.75s cubic-bezier(0.65, 0, 0.35, 1);
+    z-index: 3;
+    overflow: hidden;
+}
+
+.envelope-flap-stripe {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 42%, rgba(255, 255, 255, 0.4) 50%, transparent 58%);
+}
+
+.envelope-overlay.is-opening .envelope-flap {
+    transform: rotateY(-150deg);
+}
+
+.envelope-overlay.is-opening .envelope-letter {
+    transform: translateX(58%) rotate(3deg);
+}
+
+.envelope-tap-text {
+    color: var(--racing-yellow);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    font-style: italic;
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    animation: pulseText 1.6s ease-in-out infinite;
+    text-align: center;
+    padding: 0 var(--space-4);
+}
+
+.envelope-letter-icon {
+    font-size: 1em;
+    line-height: 1;
+}
+
+.envelope-letter-flag {
+    font-size: 0.6em;
+    line-height: 1;
+}
+
+@keyframes pulseText {
+
+    0%,
+    100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+}
+
+.card-container.pre-reveal {
+    opacity: 0;
+    pointer-events: none;
+}
+
 .card-container {
     width: clamp(300px, 85vw, 420px);
-    height: clamp(550px, 80vh, 720px);
+    height: clamp(550px, calc(var(--vh, 1vh) * 80), 720px);
     perspective: 1000px;
     z-index: 10;
     cursor: pointer;
     padding: var(--space-4);
     touch-action: pan-y;
+    transition: opacity 0.6s ease;
 }
 
 .card-inner {
@@ -507,6 +688,7 @@ h6 {
 /* Shared base styles for the guest-list box (used in modal) */
 .guest-list-box-modal {
     max-height: 60vh;
+    max-height: calc(var(--vh, 1vh) * 60);
     background: #fafafa;
     border: 1px solid #eee;
     border-radius: 14px;
@@ -561,6 +743,7 @@ h6 {
     position: relative;
     width: min(560px, 100%);
     max-height: 86vh;
+    max-height: calc(var(--vh, 1vh) * 86);
     background: white;
     border-radius: 22px;
     padding: var(--space-6);

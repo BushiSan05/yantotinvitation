@@ -2,6 +2,26 @@
 const SUPABASE_URL = 'https://mpbzwdvwcaefxtzotywo.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wYnp3ZHZ3Y2FlZnh0em90eXdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjkzNTIsImV4cCI6MjA5OTIwNTM1Mn0.dvbsfw79hl9aV9SJRo3D-q5SAnrnSC9-m6rNw7OqTV0';
 
+// FIX: iOS in-app browsers (Messenger, Instagram, etc.) miscalculate 100vh —
+// it's based on the full screen, not the area actually visible under the
+// browser's own toolbar, which crops fixed-height layouts like this card.
+// This sets a --vh custom property from the real visible height instead.
+function setRealViewportHeight() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+setRealViewportHeight();
+window.addEventListener('resize', setRealViewportHeight);
+window.addEventListener('orientationchange', () => {
+    // iOS fires resize before it finishes adjusting the toolbar; a short
+    // delay avoids reading a stale innerHeight value.
+    setTimeout(setRealViewportHeight, 100);
+});
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', setRealViewportHeight);
+}
+
 const bgRides = document.getElementById("bgRides");
 let invitationVideo = null;
 
@@ -312,17 +332,25 @@ function toggleCard(event) {
         card.classList.toggle("flipped");
 
         if (card.classList.contains("flipped")) {
-            invitationVideo.currentTime = 0;
+            if (invitationVideo) {
+                invitationVideo.currentTime = 0;
+                invitationVideo.play().catch(console.error);
+            }
             bgRides.currentTime = 0;
-
-            invitationVideo.play().catch(console.error);
             bgRides.play().catch(console.error);
+
+            // Don't let the birthday music and the ride sound play together
+            if (!audio.paused) audio.pause();
         } else {
-            invitationVideo.pause();
-            invitationVideo.currentTime = 0;
+            if (invitationVideo) {
+                invitationVideo.pause();
+                invitationVideo.currentTime = 0;
+            }
 
             bgRides.pause();
             bgRides.currentTime = 0;
+
+            audio.play().catch(() => { });
         }
     }
 }
@@ -695,16 +723,119 @@ document.addEventListener("keydown", function (e) {
 const audio = document.getElementById("bgMusic");
 audio.load();
 
-function startMusic() {
-    audio.play().catch(err => console.log(err));
+// ---- Engine sound: boosted volume + pre-primed for a snappy first play ----
+const engineSound = document.getElementById('engineSound');
+let engineAudioCtx = null;
+let engineGainNode = null;
 
-    // Remove the listeners so this only runs once
-    document.removeEventListener("click", startMusic);
-    document.removeEventListener("touchstart", startMusic);
+// function setupEngineSound() {
+//     if (!engineSound) return;
+//     engineSound.volume = 1; // native max, used if Web Audio isn't available
+//     engineSound.load();
+
+//     try {
+//         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+//         if (AudioContextClass) {
+//             engineAudioCtx = new AudioContextClass();
+//             const source = engineAudioCtx.createMediaElementSource(engineSound);
+//             engineGainNode = engineAudioCtx.createGain();
+//             // Silent for now — only boosted right before the real tap-triggered
+//             // play, so this setup never causes an audible blip on page load.
+//             engineGainNode.gain.value = 0;
+//             source.connect(engineGainNode).connect(engineAudioCtx.destination);
+//         }
+//     } catch (err) {
+//         console.log('Engine sound boost unavailable, using native volume only:', err);
+//     }
+
+//     // Prime the decoder with a silent play+pause so the very first REAL
+//     // play() (on envelope tap) starts instantly instead of buffering.
+//     engineSound.muted = true;
+//     engineSound.play().then(() => {
+//         engineSound.pause();
+//         engineSound.currentTime = 0;
+//         engineSound.muted = false;
+//     }).catch(() => {
+//         // Some browsers block even muted autoplay before any interaction —
+//         // harmless, the real tap-triggered play will still work fine.
+//         engineSound.muted = false;
+//     });
+// }
+
+// setupEngineSound();
+
+// ---- Tap-to-Open Envelope: the gesture that unlocks bgMusic autoplay ----
+function openEnvelope() {
+    const overlay = document.getElementById('envelopeOverlay');
+    if (!overlay || overlay.classList.contains('is-triggered')) return;
+    overlay.classList.add('is-triggered'); // guard against double-tap
+
+    let bgMusicStarted = false;
+    const startBgMusic = () => {
+        if (bgMusicStarted) return;
+        bgMusicStarted = true;
+        audio.play().catch(err => console.log(err));
+    };
+
+    // Play the engine sound the INSTANT the envelope is tapped — this is
+    // the tap feedback itself, fired before any animation classes are
+    // added, so it never feels tied to the flap/slide motion.
+    if (engineSound) {
+        engineSound.currentTime = 0;
+        engineSound.volume = 1;
+
+        // Boost above the file's native 100% volume and unlock the audio
+        // graph now, on this same user gesture.
+        if (engineAudioCtx) {
+            if (engineAudioCtx.state === 'suspended') {
+                engineAudioCtx.resume().catch(() => { });
+            }
+            if (engineGainNode) engineGainNode.gain.value = 1.6;
+        }
+
+        engineSound.play().catch(() => {
+            // Engine file missing/blocked — fall back to the birthday music
+            // directly on this same tap so audio still starts.
+            startBgMusic();
+        });
+        engineSound.addEventListener('ended', startBgMusic, { once: true });
+        // Safety net in case 'ended' never fires for some reason.
+        setTimeout(startBgMusic, 4000);
+    } else {
+        startBgMusic();
+    }
+
+    overlay.setAttribute('aria-hidden', 'true');
+    const card = document.querySelector('.card-container');
+
+    // Give the engine sound a brief beat on its own before the flap swings
+    // open (right-to-left) and the card slides out to the right.
+    const OPEN_DELAY = 300;
+    const ANIMATION_DURATION = 1050; // flap 750ms + letter's own 250ms delay + 800ms
+
+    setTimeout(() => {
+        overlay.classList.add('is-opening');
+    }, OPEN_DELAY);
+
+    setTimeout(() => {
+        if (card) card.classList.remove('pre-reveal');
+        overlay.classList.add('is-hidden');
+    }, OPEN_DELAY + ANIMATION_DURATION);
+
+    setTimeout(() => {
+        overlay.style.display = 'none';
+    }, OPEN_DELAY + ANIMATION_DURATION + 650);
 }
 
-// Desktop
-document.addEventListener("click", startMusic);
+function envelopeKeyHandler(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openEnvelope();
+    }
+}
 
-// Mobile (including Messenger)
-document.addEventListener("touchstart", startMusic);
+const envelopeOverlay = document.getElementById('envelopeOverlay');
+if (envelopeOverlay) {
+    envelopeOverlay.addEventListener('click', openEnvelope);
+    envelopeOverlay.addEventListener('keydown', envelopeKeyHandler);
+}

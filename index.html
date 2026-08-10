@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>You're Invited! 🎂</title>
     <!-- Include Supabase Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -19,8 +19,28 @@
     <!-- Ambient Graphics Layer Background -->
     <div id="ambient-wrapper"></div>
 
+    <!-- Tap-to-Open Envelope (gesture-gated entry, also starts bgMusic) -->
+    <div id="envelopeOverlay" class="envelope-overlay" role="button" tabindex="0"
+        aria-label="Tap to open your invitation">
+        <div class="envelope" id="envelope">
+            <div class="envelope-back">
+                <div class="envelope-checker-strip envelope-checker-strip-top"></div>
+                <div class="envelope-checker-strip envelope-checker-strip-bottom"></div>
+                <div class="envelope-number-badge">1</div>
+            </div>
+            <div class="envelope-letter">
+                <span class="envelope-letter-icon">🏍️</span>
+                <span class="envelope-letter-flag">🏁</span>
+            </div>
+            <div class="envelope-flap">
+                <span class="envelope-flap-stripe"></span>
+            </div>
+        </div>
+        <p class="envelope-tap-text">🏁 START YOUR ENGINES 🏁</p>
+    </div>
+
     <!-- Active Invitation 3D Component Block -->
-    <div class="card-container" onclick="toggleCard(event)" tabindex="0" role="button"
+    <div class="card-container pre-reveal" onclick="toggleCard(event)" tabindex="0" role="button"
         aria-label="Birthday invitation card, press Enter or Space to flip">
         <div class="card-inner">
 
@@ -70,6 +90,10 @@
             </div>
         </div>
     </div>
+
+    <audio id="engineSound" preload="auto">
+        <source src="audio/engine.mp3" type="audio/mpeg">
+    </audio>
 
     <audio id="bgMusic" loop preload="auto">
         <source src="audio/hbd.mp3" type="audio/mpeg">
