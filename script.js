@@ -22,7 +22,6 @@ if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', setRealViewportHeight);
 }
 
-const bgRides = document.getElementById("bgRides");
 let invitationVideo = null;
 
 // 2. MIXED CELEBRATION EFFECTS
@@ -169,7 +168,7 @@ async function initApp() {
         // until every photo, the video and all three audio tracks are
         // buffered, so nothing pops in mid-invitation.
         const [slides, video] = await Promise.all([setupSlideshow(), setupVideo()]);
-        await preloadMedia([...slides, video, audio, engineSound, bgRides]);
+        await preloadMedia([...slides, video, audio, engineSound]);
     } catch (err) {
         showDiagnosticError();
     } finally {
@@ -351,44 +350,58 @@ async function setupVideo() {
 
         const video = document.createElement("video");
 
+        // Store globally
         invitationVideo = video;
 
+        // Video URL from Supabase
         video.src = videoData[0].url;
-        video.muted = true;
+
+        // IMPORTANT:
+        // The video now contains the H2R audio.
+        video.muted = false;
+
+        // Loop the entire video + audio together
         video.loop = true;
+
+        // Mobile compatibility
         video.playsInline = true;
-        video.preload = "auto";
 
         video.setAttribute("playsinline", "");
         video.setAttribute("webkit-playsinline", "");
 
-        video.addEventListener("ended", () => {
-            bgRides.currentTime = 0;
-            bgRides.play().catch(() => { });
-        });
+        video.preload = "auto";
 
-        // Keep audio synchronized
-        video.addEventListener("timeupdate", () => {
-            if (!bgRides.paused) {
-                const diff = Math.abs(video.currentTime - bgRides.currentTime);
+        // Optional volume
+        video.volume = 1.0;
 
-                if (diff > 0.25) {
-                    bgRides.currentTime = video.currentTime;
-                }
-            }
-        });
-
+        // Video loading error
         video.onerror = () => {
+            console.error("Video failed to load.");
+
             container.innerHTML =
                 '<div class="video-error-text">Failed to load video</div>';
         };
 
+        // Useful for checking actual duration
+        video.addEventListener("loadedmetadata", () => {
+            console.log(
+                "Video duration:",
+                video.duration,
+                "seconds"
+            );
+        });
+
         container.appendChild(video);
+
         return video;
 
     } catch (err) {
+
+        console.error("setupVideo error:", err);
+
         container.innerHTML =
             '<div class="video-error-text">Failed to load video</div>';
+
         return null;
     }
 }
@@ -401,28 +414,70 @@ function toggleCard(event) {
         !event.target.closest(".guest-list") &&
         !event.target.closest(".guest-list-centered")
     ) {
+
         card.classList.toggle("flipped");
 
+        // =====================================================
+        // CARD OPENED
+        // =====================================================
+
         if (card.classList.contains("flipped")) {
-            if (invitationVideo) {
-                invitationVideo.currentTime = 0;
-                invitationVideo.play().catch(console.error);
-            }
-            bgRides.currentTime = 0;
-            bgRides.play().catch(console.error);
 
-            // Don't let the birthday music and the ride sound play together
-            if (!audio.paused) audio.pause();
-        } else {
+            // Stop birthday music
+            if (audio && !audio.paused) {
+                audio.pause();
+                audio.currentTime = 0;
+            }
+
+            // Start invitation video + embedded H2R audio
             if (invitationVideo) {
+
+                invitationVideo.currentTime = 0;
+
+                // Make sure embedded audio is enabled
+                invitationVideo.muted = false;
+                invitationVideo.volume = 1.0;
+
+                invitationVideo.play()
+                    .then(() => {
+                        console.log("Video + H2R audio playing");
+                    })
+                    .catch(err => {
+                        console.error(
+                            "Video playback failed:",
+                            err
+                        );
+                    });
+            }
+
+        }
+
+        // =====================================================
+        // CARD CLOSED
+        // =====================================================
+
+        else {
+
+            // Stop invitation video + embedded H2R audio
+            if (invitationVideo) {
+
                 invitationVideo.pause();
+
                 invitationVideo.currentTime = 0;
             }
 
-            bgRides.pause();
-            bgRides.currentTime = 0;
+            // Resume birthday music
+            if (audio) {
+                audio.currentTime = 0;
 
-            audio.play().catch(() => { });
+                audio.play()
+                    .catch(err => {
+                        console.log(
+                            "Birthday audio playback failed:",
+                            err
+                        );
+                    });
+            }
         }
     }
 }
@@ -847,15 +902,32 @@ let openWasRequested = false;
 // taps early we consume that gesture here, so the engine sound still plays
 // when the queued open runs a moment later.
 function unlockAudioPlayback() {
-    [engineSound, audio, bgRides].filter(Boolean).forEach(el => {
-        const wasMuted = el.muted;
-        el.muted = true;
-        el.play().then(() => {
-            el.pause();
-            el.currentTime = 0;
-            el.muted = wasMuted;
-        }).catch(() => { el.muted = wasMuted; });
-    });
+
+    [engineSound, audio, invitationVideo]
+        .filter(Boolean)
+        .forEach(el => {
+
+            const wasMuted = el.muted;
+
+            // Temporarily mute to satisfy autoplay restrictions
+            el.muted = true;
+
+            el.play()
+                .then(() => {
+
+                    el.pause();
+
+                    el.currentTime = 0;
+
+                    el.muted = wasMuted;
+
+                })
+                .catch(() => {
+
+                    el.muted = wasMuted;
+
+                });
+        });
 }
 
 function markMediaReady() {
