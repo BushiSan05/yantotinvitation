@@ -316,12 +316,20 @@ h6 {
    in white over a red shadow so it reads at any size */
 .envelope-number {
     position: relative;
-    display: inline-block;
 
     font-family: 'MotoGP Display', sans-serif;
-    font-size: clamp(90px, 22vw, 180px);
+    font-size: clamp(100px, 25vw, 220px);
+    height: clamp(120px, 30vw, 250px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     font-weight: 700;
     letter-spacing: 1px;
+
+    /* Keep pseudo-element behind the text */
+    isolation: isolate;
 
     /* Gradient fill */
     background: linear-gradient(to bottom,
@@ -341,11 +349,26 @@ h6 {
 
 .envelope-number::before {
     content: attr(data-number);
+
     position: absolute;
     inset: 0;
-    z-index: -1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-family: 'MotoGP Display', sans-serif;
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+
     color: transparent;
+
+    /* Gold outer outline */
     -webkit-text-stroke: 8px #ffd700;
+
+    z-index: -1;
+    pointer-events: none;
 }
 
 /* Green light — and away we go */
@@ -355,7 +378,7 @@ h6 {
 }
 
 .envelope-tap-text {
-    margin-top: -10px;
+    margin-top: 0px;
     color: var(--racing-yellow);
     /* Scales with the viewport so it stays on one line on a 360px phone */
     font-size: clamp(0.75rem, 3.1vw, var(--font-size-lg));
