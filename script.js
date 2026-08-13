@@ -295,7 +295,7 @@ async function setupSlideshow() {
 
             container.appendChild(slide);
 
-            return slide;
+            return img;
         });
 
     } catch (err) {
@@ -425,7 +425,6 @@ function toggleCard(event) {
 
     if (
         !event.target.closest(".rsvp-form") &&
-        !event.target.closest(".guest-list") &&
         !event.target.closest(".guest-list-centered")
     ) {
 
@@ -501,7 +500,7 @@ document.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
         const card = document.querySelector('.card-container');
         if (document.activeElement === card || card.contains(document.activeElement)) {
-            if (!event.target.closest('.rsvp-form') && !event.target.closest('.guest-list') && !event.target.closest('.guest-list-centered')) {
+            if (!event.target.closest('.rsvp-form') && !event.target.closest('.guest-list-centered')) {
                 event.preventDefault();
                 toggleCard(event);
             }
