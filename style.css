@@ -278,7 +278,7 @@ h6 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    font-size: clamp(90px, 24vw, 200px);
     padding: var(--space-4);
     background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0) 72%);
 }
@@ -320,8 +320,8 @@ h6 {
 
     font-family: 'MotoGP Display', sans-serif;
     font-size: clamp(90px, 22vw, 180px);
-    font-weight: var(--font-weight-bold);
-    letter-spacing: var(--letter-spacing-tight);
+    font-weight: 700;
+    letter-spacing: 1px;
 
     /* Gradient fill */
     background: linear-gradient(to bottom,
@@ -355,7 +355,7 @@ h6 {
 }
 
 .envelope-tap-text {
-    margin: 0;
+    margin-top: -10px;
     color: var(--racing-yellow);
     /* Scales with the viewport so it stays on one line on a 360px phone */
     font-size: clamp(0.75rem, 3.1vw, var(--font-size-lg));
