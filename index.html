@@ -7,6 +7,10 @@
     <title>You're Invited! 🎂</title>
     <!-- Include Supabase Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Preload the display font used for the envelope number so it's ready
+         before first paint, instead of flashing a fallback font at a huge
+         size and then resizing once the custom font loads in. -->
+    <link rel="preload" href="fonts/motogp.ttf" as="font" type="font/ttf" crossorigin>
     <!-- LINK TO EXTERNAL CSS FILE -->
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,6 +19,9 @@
 </head>
 
 <body>
+
+    <!-- On-Screen Visual Debugger for Mobile Troubleshooting -->
+    <div id="error-logger"></div>
 
     <!-- Ambient Graphics Layer Background -->
     <div id="ambient-wrapper"></div>

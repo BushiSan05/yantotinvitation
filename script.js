@@ -191,19 +191,12 @@ function preloadMedia(elements) {
     const targets = elements.filter(Boolean);
     if (!targets.length) return Promise.resolve();
 
-    // let settled = 0;
-    // const onSettled = () => {
-    //     settled += 1;
-    //     setStartLights(settled / targets.length);
-    // };
-
     const buffered = targets.map(el => new Promise(resolve => {
         let finished = false;
         const done = () => {
             if (finished) return;
             finished = true;
             clearTimeout(deadline);
-            onSettled();
             resolve();
         };
         const deadline = setTimeout(done, ASSET_TIMEOUT);
@@ -235,12 +228,6 @@ function preloadMedia(elements) {
         new Promise(resolve => setTimeout(resolve, PRELOAD_TIMEOUT)),
     ]);
 }
-
-// function setStartLights(fraction) {
-//     const lights = document.querySelectorAll('.start-light');
-//     const lit = Math.round(fraction * lights.length);
-//     lights.forEach((light, i) => light.classList.toggle('is-lit', i < lit));
-// }
 
 function showDiagnosticError() { }
 
@@ -882,42 +869,6 @@ const engineSound = document.getElementById('engineSound');
 let engineAudioCtx = null;
 let engineGainNode = null;
 
-// function setupEngineSound() {
-//     if (!engineSound) return;
-//     engineSound.volume = 1; // native max, used if Web Audio isn't available
-//     engineSound.load();
-
-//     try {
-//         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-//         if (AudioContextClass) {
-//             engineAudioCtx = new AudioContextClass();
-//             const source = engineAudioCtx.createMediaElementSource(engineSound);
-//             engineGainNode = engineAudioCtx.createGain();
-//             // Silent for now — only boosted right before the real tap-triggered
-//             // play, so this setup never causes an audible blip on page load.
-//             engineGainNode.gain.value = 0;
-//             source.connect(engineGainNode).connect(engineAudioCtx.destination);
-//         }
-//     } catch (err) {
-//         console.log('Engine sound boost unavailable, using native volume only:', err);
-//     }
-
-//     // Prime the decoder with a silent play+pause so the very first REAL
-//     // play() (on envelope tap) starts instantly instead of buffering.
-//     engineSound.muted = true;
-//     engineSound.play().then(() => {
-//         engineSound.pause();
-//         engineSound.currentTime = 0;
-//         engineSound.muted = false;
-//     }).catch(() => {
-//         // Some browsers block even muted autoplay before any interaction —
-//         // harmless, the real tap-triggered play will still work fine.
-//         engineSound.muted = false;
-//     });
-// }
-
-// setupEngineSound();
-
 // ---- Tap-to-Open Envelope: the gesture that unlocks bgMusic autoplay ----
 // The envelope stays sealed until every asset is buffered. A tap before then
 // is remembered rather than ignored, so an eager guest isn't left tapping a
@@ -963,7 +914,6 @@ function markMediaReady() {
 
     const overlay = document.getElementById('envelopeOverlay');
     if (overlay) overlay.classList.remove('is-loading');
-    // setStartLights(1);
 
     const tapText = document.getElementById('envelopeTapText');
     if (tapText) tapText.textContent = '🏁 START YOUR ENGINES 🏁';
