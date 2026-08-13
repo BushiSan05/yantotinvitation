@@ -403,7 +403,7 @@ h6 {
     width: 100%;
     height: 100%;
     text-align: center;
-    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.8s ease;
     transform-style: preserve-3d;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
     border-radius: var(--card-radius);
@@ -419,6 +419,7 @@ h6 {
     width: 100%;
     height: 100%;
     backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     border-radius: 20px;
     display: flex;
     flex-direction: column;
@@ -435,6 +436,8 @@ h6 {
     color: var(--text-light);
     border-color: var(--racing-yellow);
     gap: var(--space-3);
+    transform: rotate(0deg);
+    overflow: hidden;
 }
 
 .card-front h1 {
@@ -501,22 +504,48 @@ h6 {
 }
 
 /* Automated Photo Slideshow Container */
-.slideshow-container {
+.slideshow-wrapper {
+    position: relative;
     width: 100%;
     flex: 1;
-    min-height: 380px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 15px;
+    aspect-ratio: 3 / 4;
+}
+
+.slideshow-container {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
     overflow: hidden;
-    position: relative;
+    background: rgba(255, 255, 255, 0.2);
+
+    border-radius: 15px;
     border: 3px solid white;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+
+    z-index: 1;
+}
+
+.frame-overlay {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: fill;
+
+    pointer-events: none;
+
+    z-index: 10;
 }
 
 #slideshowBox {
     position: relative;
     width: 100%;
-    height: 400px;
+    aspect-ratio: 3 / 4;
     overflow: hidden;
 }
 
@@ -525,16 +554,67 @@ h6 {
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
 
     opacity: 0;
-    transition: opacity 1.2s ease;
-    transform: scale(1);
+    transition: opacity 0.8s ease;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .slide.active {
     opacity: 1;
-    animation: kenBurns 5s ease forwards;
+}
+
+.slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@font-face {
+    font-family: 'MotoGP Display';
+    src: url('fonts/motogp.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+.slide-caption {
+    position: absolute;
+    left: 5%;
+    right: 5%;
+    bottom: 95px;
+
+    padding: 3px 16px;
+
+    background: rgba(0, 0, 0, 0.75);
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+
+    text-align: center;
+
+    font-family: 'MotoGP Display', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+
+    color: #ffffff;
+    z-index: 2;
+}
+
+.slide-caption-text {
+    background: linear-gradient(to bottom,
+            #ff0000 0%,
+            #ff6600 50%,
+            #ffff00 100%);
+
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
 }
 
 @keyframes kenBurns {

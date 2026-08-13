@@ -253,43 +253,70 @@ const SLIDE_INTERVAL = 3000;
 // turn instead of being swapped out behind the envelope.
 async function setupSlideshow() {
     const container = document.getElementById('slideshowBox');
-    container.innerHTML = '<div class="placeholder-text">Loading memories...</div>';
+
+    container.innerHTML =
+        '<div class="placeholder-text">Loading memories...</div>';
 
     if (!SUPABASE_URL || SUPABASE_URL.includes('YOUR_')) {
-        container.innerHTML = `<div class="slideshow-error-text">Missing Configuration URL placeholder attributes.</div>`;
+        container.innerHTML =
+            '<div class="slideshow-error-text">Missing Configuration URL placeholder attributes.</div>';
         return [];
     }
 
     try {
         // Fetch media from Supabase, ordered by order_no
-        const { data: mediaData, error } = await window.supabaseClient
-            .from('media')
-            .select('url')
-            .eq('type', 'photo')
-            .order('order_no', { ascending: true });
-
+        const { data: mediaData, error } =
+            await window.supabaseClient
+                .from('media')
+                .select('url, caption')
+                .eq('type', 'photo')
+                .order('order_no', { ascending: true });
 
         if (error) throw error;
 
         if (!mediaData || mediaData.length === 0) {
-            container.innerHTML = '<div class="no-photos-text">No photos found</div>';
+            container.innerHTML =
+                '<div class="no-photos-text">No photos found</div>';
             return [];
         }
 
         container.innerHTML = '';
 
         return mediaData.map((media, index) => {
+
+            // Create slide container
+            const slide = document.createElement('div');
+            slide.classList.add('slide');
+
             const img = document.createElement('img');
             img.src = media.url;
-            img.classList.add('slide');
             img.alt = `Birthday memory photo ${index + 1}`;
-            img.setAttribute('role', 'img');
-            container.appendChild(img);
-            return img;
+
+            slide.appendChild(img);
+
+            if (media.caption) {
+                const caption = document.createElement('div');
+                caption.classList.add('slide-caption');
+
+                const captionText = document.createElement('span');
+                captionText.classList.add('slide-caption-text');
+                captionText.textContent = media.caption;
+
+                caption.appendChild(captionText);
+                slide.appendChild(caption);
+            }
+
+            container.appendChild(slide);
+
+            return slide;
         });
 
     } catch (err) {
-        container.innerHTML = '<div class="slideshow-error-text">Failed to load photos</div>';
+        console.error('Slideshow error:', err);
+
+        container.innerHTML =
+            '<div class="slideshow-error-text">Failed to load photos</div>';
+
         return [];
     }
 }

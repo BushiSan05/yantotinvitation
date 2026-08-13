@@ -9,6 +9,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- LINK TO EXTERNAL CSS FILE -->
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -60,8 +63,14 @@
                 <p class="text-big">is turning 1!</p>
                 <p class="text-medium">Join the Birthday Grand Prix!</p>
 
-                <div class="slideshow-container" id="slideshowBox">
-                    <div class="placeholder-text">Loading memories...</div>
+                <div class="slideshow-wrapper">
+
+                    <div class="slideshow-container" id="slideshowBox">
+                        <div class="placeholder-text">Loading memories...</div>
+                    </div>
+
+                    <img class="frame-overlay" src="images/template.png" alt="">
+
                 </div>
 
                 <p class="text-small">( Tap card to open details )</p>
