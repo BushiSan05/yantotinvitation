@@ -318,8 +318,8 @@ h6 {
     position: relative;
 
     font-family: 'MotoGP Display', sans-serif;
-    font-size: clamp(100px, 25vw, 220px);
-    height: clamp(120px, 30vw, 250px);
+    font-size: calc(var(--card-width) * 0.40);
+    height: calc(var(--card-height) * 0.35);
 
     display: flex;
     align-items: center;
@@ -327,9 +327,6 @@ h6 {
 
     font-weight: 700;
     letter-spacing: 1px;
-
-    /* Keep pseudo-element behind the text */
-    isolation: isolate;
 
     /* Gradient fill */
     background: linear-gradient(to bottom,
