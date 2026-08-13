@@ -315,18 +315,37 @@ h6 {
 /* Race number in the style of a rider's jersey: heavy italic, knocked out
    in white over a red shadow so it reads at any size */
 .envelope-number {
-    font-family: var(--font-family-display);
-    font-size: clamp(4.5rem, 30vw, 9rem);
+    position: relative;
+    display: inline-block;
+
+    font-family: 'MotoGP Display', sans-serif;
+    font-size: clamp(90px, 22vw, 180px);
     font-weight: var(--font-weight-bold);
-    font-style: italic;
-    line-height: 0.85;
     letter-spacing: var(--letter-spacing-tight);
-    color: #fff;
-    -webkit-text-stroke: 3px var(--primary);
-    text-shadow:
-        6px 6px 0 var(--primary),
-        0 10px 30px rgba(0, 0, 0, 0.75);
-    transform: skewX(-8deg);
+
+    /* Gradient fill */
+    background: linear-gradient(to bottom,
+            #ff0000 0%,
+            #ff6600 70%,
+            #ffff00 100%);
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+
+    /* Black inner outline */
+    -webkit-text-stroke: 3px #000000;
+}
+
+.envelope-number::before {
+    content: attr(data-number);
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    color: transparent;
+    -webkit-text-stroke: 8px #ffd700;
 }
 
 /* Green light — and away we go */
