@@ -625,7 +625,7 @@ h6 {
        relative to the frame consistent across screen sizes. Bumped up
        further so it clears the frame-overlay artwork along the bottom
        edge instead of sitting under it. */
-    bottom: clamp(35px, calc(var(--card-width) * 0.22), 67px);
+    bottom: clamp(35px, calc(var(--card-width) * 0.22), 60px);
 
     padding: clamp(2px, calc(var(--card-width) * 0.008), 4px) clamp(10px, calc(var(--card-width) * 0.04), 18px);
 
