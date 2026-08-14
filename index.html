@@ -1,44 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>You're Invited! 🎂</title>
-    <!-- Include Supabase Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Preload the display font used for the envelope number so it's ready
-         before first paint, instead of flashing a fallback font at a huge
-         size and then resizing once the custom font loads in. -->
     <link rel="preload" href="fonts/motogp.ttf" as="font" type="font/ttf" crossorigin>
-    <!-- LINK TO EXTERNAL CSS FILE -->
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
-
-    <!-- On-Screen Visual Debugger for Mobile Troubleshooting -->
     <div id="error-logger"></div>
-
-    <!-- Ambient Graphics Layer Background -->
     <div id="ambient-wrapper"></div>
-
-    <!-- Tap-to-Open Envelope (gesture-gated entry, also starts bgMusic) -->
-    <div id="envelopeOverlay" class="envelope-overlay is-loading" role="button" tabindex="0"
-        aria-label="Tap to open your invitation">
+    <div id="envelopeOverlay" class="envelope-overlay is-loading" role="button" tabindex="0" aria-label="Tap to open your invitation">
         <div class="envelope" id="envelope">
             <div class="envelope-back">
                 <div class="envelope-checker-strip envelope-checker-strip-top"></div>
                 <div class="envelope-checker-strip envelope-checker-strip-bottom"></div>
                 <div class="envelope-livery" aria-hidden="true"></div>
-
-                <!-- Lights, race number, call to action — one centred column -->
                 <div class="envelope-stack">
-                    <!-- Start-lights gantry: fills red as the media preloads,
-                         then goes green on tap, MotoGP race-start style -->
                     <div class="start-lights" id="startLights" aria-hidden="true">
                         <span class="start-light"></span>
                         <span class="start-light"></span>
@@ -46,41 +28,27 @@
                         <span class="start-light"></span>
                         <span class="start-light"></span>
                     </div>
-
                     <div class="envelope-number" data-number="17">17</div>
-
                     <p class="envelope-tap-text" id="envelopeTapText">WARMING UP THE GRID…</p>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Active Invitation 3D Component Block -->
-    <div class="card-container pre-reveal" onclick="toggleCard(event)" tabindex="0" role="button"
-        aria-label="Birthday invitation card, press Enter or Space to flip">
+    <div class="card-container pre-reveal" onclick="toggleCard(event)" tabindex="0" role="button" aria-label="Birthday invitation card, press Enter or Space to flip">
         <div class="card-inner">
-
-            <!-- Cover Front Layout (With Auto-Slideshow) -->
             <div class="card-front">
                 <h1>🏁 YOU'RE INVITED! 🏁</h1>
                 <h2>🏍️ Eliann Ichiro 🏍️</h2>
                 <p class="text-big">is turning 1!</p>
                 <p class="text-medium">Join the Birthday Grand Prix!</p>
-
                 <div class="slideshow-wrapper">
-
                     <div class="slideshow-container" id="slideshowBox">
                         <div class="placeholder-text">Loading memories...</div>
                     </div>
-
                     <img class="frame-overlay" src="images/template.png" alt="">
-
                 </div>
-
                 <p class="text-small">( Tap card to open details )</p>
             </div>
-
-            <!-- Details Back Layout -->
             <div class="card-back">
                 <h2>🏁 Birthday Grand Prix! 🏍️</h2>
                 <div class="video-container" id="videoBox">
@@ -91,75 +59,38 @@
                     <div class="detail-item">⏰ <strong>Time:</strong> 6:00 PM onwards</div>
                     <div class="detail-item">📍 <strong>Venue:</strong> Calvario, Loay, Bohol</div>
                 </div>
-
                 <div class="rsvp-form">
-                    <input type="text" id="guestName" class="name-input" placeholder="Enter your name" required
-                        aria-label="Guest name input" aria-required="true">
-                    <textarea id="guestMessage" class="message-input" placeholder="Add a message" rows="2"
-                        aria-label="Guest message input" aria-required="true"></textarea>
+                    <input type="text" id="guestName" class="name-input" placeholder="Enter your name" required aria-label="Guest name input" aria-required="true">
+                    <textarea id="guestMessage" class="message-input" placeholder="Add a message" rows="2" aria-label="Guest message input" aria-required="true"></textarea>
                     <div class="btn-group">
-                        <button id="goingBtn" class="rsvp-btn btn-going" onclick="submitRSVP(event)"
-                            aria-label="RSVP">LET'S RACE! 🏁</button>
+                        <button id="goingBtn" class="rsvp-btn btn-going" onclick="submitRSVP(event)" aria-label="RSVP">LET'S RACE! 🏁</button>
                     </div>
                 </div>
-
                 <div class="guest-list-centered">
-                    <button id="viewMessagesBtn" class="view-messages-btn" type="button"
-                        aria-label="View all guest messages">
-                        🏁 View All Guest Messages <span id="guestCount" class="guest-count">(0)</span>
-                    </button>
+                    <button id="viewMessagesBtn" class="view-messages-btn" type="button" aria-label="View all guest messages">🏁 View All Guest Messages <span id="guestCount" class="guest-count">(0)</span></button>
                 </div>
             </div>
         </div>
     </div>
-
-    <audio id="engineSound" preload="auto">
-        <source src="audio/engine.mp3" type="audio/mpeg">
-    </audio>
-
-    <audio id="bgMusic" loop preload="auto">
-        <source src="audio/hbd.mp3" type="audio/mpeg">
-    </audio>
-
-
-    <!-- Modal / Dialog for all Guest Names + Messages -->
-    <div id="messagesModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="messagesModalTitle"
-        aria-hidden="true">
+    <audio id="engineSound" preload="auto"><source src="audio/engine.mp3" type="audio/mpeg"></audio>
+    <audio id="bgMusic" loop preload="auto"><source src="audio/hbd.mp3" type="audio/mpeg"></audio>
+    <div id="messagesModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="messagesModalTitle" aria-hidden="true">
         <div class="modal-dialog" role="document">
-            <button id="closeModalBtn" class="modal-close" type="button"
-                aria-label="Close guest messages dialog">&times;</button>
-            <h3 id="messagesModalTitle" class="modal-title">🏁 Guest Messages <span id="guestCountModal"
-                    class="guest-count">(0)</span></h3>
+            <button id="closeModalBtn" class="modal-close" type="button" aria-label="Close guest messages dialog">&times;</button>
+            <h3 id="messagesModalTitle" class="modal-title">🏁 Guest Messages <span id="guestCountModal" class="guest-count">(0)</span></h3>
             <div id="guestListBoxModal" class="guest-list-box guest-list-box-modal" role="list" aria-live="polite">
                 <div class="guest-list-placeholder">Loading guest list…</div>
             </div>
         </div>
     </div>
-
-    <div id="alertModal" class="alert-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="alertTitle"
-        aria-hidden="true">
-
+    <div id="alertModal" class="alert-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="alertTitle" aria-hidden="true">
         <div class="alert-modal">
-
             <div id="alertIcon" class="alert-icon">⚠️</div>
-
-            <h3 id="alertTitle" class="alert-title">
-                Missing Name
-            </h3>
-
-            <p id="alertMessage" class="alert-message">
-                Please type your name before responding.
-            </p>
-
-            <button id="alertOkBtn" class="alert-button">
-                OK
-            </button>
-
+            <h3 id="alertTitle" class="alert-title">Missing Name</h3>
+            <p id="alertMessage" class="alert-message">Please type your name before responding.</p>
+            <button id="alertOkBtn" class="alert-button">OK</button>
         </div>
     </div>
-
-    <!-- LINK TO EXTERNAL JAVASCRIPT FILE (Placed at bottom for fast loading) -->
     <script src="script.js"></script>
 </body>
-
 </html>
