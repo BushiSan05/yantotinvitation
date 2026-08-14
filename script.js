@@ -151,7 +151,7 @@ window.addEventListener('load', () => {
 
     // Try to initialize Supabase-dependent features
     if (typeof window.supabase === 'undefined') {
-        showDiagnosticError();
+        showDiagnosticError('Supabase library failed to load — check your network connection.');
         markMediaReady();
         return;
     }
@@ -170,7 +170,7 @@ async function initApp() {
         const [slides, video] = await Promise.all([setupSlideshow(), setupVideo()]);
         await preloadMedia([...slides, video, audio, engineSound]);
     } catch (err) {
-        showDiagnosticError();
+        showDiagnosticError(`App init failed: ${err.message || err}`);
     } finally {
         markMediaReady();
     }
@@ -229,7 +229,20 @@ function preloadMedia(elements) {
     ]);
 }
 
-function showDiagnosticError() { }
+// Writes a message into the on-screen debug panel (#error-logger) and makes
+// it visible. This exists because iOS in-app browsers (Messenger, Instagram)
+// don't expose a real console, so this is the only way to see what went
+// wrong on a guest's actual phone.
+function showDiagnosticError(message) {
+    const logger = document.getElementById('error-logger');
+    if (!logger) return;
+
+    const text = message || 'Something went wrong loading this page.';
+    const line = document.createElement('div');
+    line.textContent = text;
+    logger.appendChild(line);
+    logger.style.display = 'block';
+}
 
 // 1. DYNAMIC SLIDESHOW SYSTEM
 let slideshowInterval = null;
@@ -553,8 +566,11 @@ async function submitRSVP(event) {
         return;
     }
 
-    const sanitizedName = guestName.replace(/[<>]/g, '');
-    const sanitizedMessage = guestMessage.replace(/[<>]/g, '');
+    // No manual stripping needed here — everything is rendered with
+    // textContent (see renderGuestItems), which already prevents XSS
+    // without mangling legitimate input like "<3" in a message.
+    const sanitizedName = guestName;
+    const sanitizedMessage = guestMessage;
 
     goingBtn.disabled = true;
     nameInput.disabled = true;
@@ -585,7 +601,7 @@ async function submitRSVP(event) {
             "success"
         );
     } catch (err) {
-        showDiagnosticError();
+        showDiagnosticError(`RSVP submit failed: ${err.message || err}`);
         showAlertDialog(
             "Submission Failed",
             "Unable to send message at the moment. Please try again later.",
@@ -641,8 +657,8 @@ function renderGuestItems(container, data, schema) {
     data.forEach((entry, index) => {
         const rawName = entry[schema.nameCol] ?? '';
         const rawMsg = entry[schema.msgCol] ?? '';
-        const safeName = String(rawName || 'Anonymous').replace(/[<>]/g, '');
-        const safeMessage = String(rawMsg || '').replace(/[<>]/g, '');
+        const safeName = String(rawName || 'Anonymous');
+        const safeMessage = String(rawMsg || '');
 
         const item = document.createElement('div');
         item.className = 'guest-item';

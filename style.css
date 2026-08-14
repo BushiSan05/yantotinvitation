@@ -9,6 +9,13 @@ html {
     height: 100vh;
     height: calc(var(--vh, 1vh) * 100);
     width: 100vw;
+    /* Android Chrome auto-boosts font size on narrow columns to aid
+       readability; iOS Safari doesn't. Left alone, identical CSS renders
+       at different effective sizes (and therefore different spacing,
+       since so much of this layout is font-size-driven via clamp/em) on
+       the two platforms. Locking it to 100% keeps both uniform. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
 :root {
@@ -84,9 +91,14 @@ html {
     --card-width: clamp(300px, 85vw, 420px);
     /* The min() cap wins on viewports shorter than the 550px floor — an
        in-app browser with the soft keyboard up, for instance — so the card
-       shrinks with the screen instead of running off the bottom of it */
+       shrinks with the screen instead of running off the bottom of it.
+       The cap also has to subtract the safe-area insets, not just
+       --space-6: on a notched/home-indicator iPhone the body's own
+       safe-area padding already eats real vertical space that Android
+       (near-zero insets) doesn't have to give up, so without this the
+       card renders too tall and gets clipped unevenly on iOS only. */
     --card-height: min(clamp(550px, calc(var(--vh, 1vh) * 80), 720px),
-            calc(var(--vh, 1vh) * 100 - var(--space-6)));
+            calc(var(--vh, 1vh) * 100 - var(--space-6) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)));
     --card-padding: var(--space-4);
     --card-radius: 20px;
 
@@ -607,9 +619,15 @@ h6 {
     position: absolute;
     left: 5%;
     right: 5%;
-    bottom: 60px;
+    /* Was a flat 60px, so it sat proportionally lower on a small phone's
+       card than on a larger one. Scaling off --card-width (the same
+       clamped value driving the rest of the card) keeps its position
+       relative to the frame consistent across screen sizes. Bumped up
+       further so it clears the frame-overlay artwork along the bottom
+       edge instead of sitting under it. */
+    bottom: clamp(40px, calc(var(--card-width) * 0.22), 80px);
 
-    padding: 3px 16px;
+    padding: clamp(2px, calc(var(--card-width) * 0.008), 4px) clamp(10px, calc(var(--card-width) * 0.04), 18px);
 
     background: rgba(0, 0, 0, 0.75);
     border: 2px solid #ffd700;
@@ -618,7 +636,7 @@ h6 {
     text-align: center;
 
     font-family: 'MotoGP Display', sans-serif;
-    font-size: 30px;
+    font-size: clamp(1.15rem, calc(var(--card-width) * 0.072), 1.9rem);
     font-weight: 700;
     letter-spacing: 1px;
     text-transform: uppercase;
